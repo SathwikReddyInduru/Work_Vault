@@ -17,7 +17,8 @@
     "dist:mac": "npm run build && electron-builder --mac",
     "dist:linux": "npm run build && electron-builder --linux",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint src electron --ext .ts,.tsx"
+    "lint": "eslint src electron --ext .ts,.tsx",
+    "postinstall": "electron-rebuild"
   },
   "dependencies": {
     "better-sqlite3": "^9.4.3",

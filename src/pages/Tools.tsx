@@ -1,0 +1,96 @@
+// src/pages/Tools.tsx
+import { PageWrapper } from '@/components/layout/PageWrapper';
+import { Base64Tool } from '@/components/tools/Base64Tool';
+import { JsonFormatter } from '@/components/tools/JsonFormatter';
+import { PasswordGenerator } from '@/components/tools/PasswordGenerator';
+import { UuidGenerator } from '@/components/tools/UuidGenerator';
+import { clsx } from 'clsx';
+import { Binary, Braces, Hash, ShieldCheck } from 'lucide-react';
+import React, { useState } from 'react';
+
+interface Tool {
+  id: string;
+  label: string;
+  icon: React.ReactNode;
+  component: React.ReactNode;
+  description: string;
+}
+
+const TOOLS: Tool[] = [
+  {
+    id: 'password',
+    label: 'Password Generator',
+    icon: <ShieldCheck size={16} />,
+    description: 'Generate secure random passwords',
+    component: <PasswordGenerator />,
+  },
+  {
+    id: 'uuid',
+    label: 'UUID Generator',
+    icon: <Hash size={16} />,
+    description: 'Generate v4 UUIDs',
+    component: <UuidGenerator />,
+  },
+  {
+    id: 'json',
+    label: 'JSON Formatter',
+    icon: <Braces size={16} />,
+    description: 'Format and minify JSON',
+    component: <JsonFormatter />,
+  },
+  {
+    id: 'base64',
+    label: 'Base64',
+    icon: <Binary size={16} />,
+    description: 'Encode and decode Base64',
+    component: <Base64Tool />,
+  },
+];
+
+const Tools: React.FC = () => {
+  const [active, setActive] = useState(TOOLS[0].id);
+  const current = TOOLS.find((t) => t.id === active)!;
+
+  return (
+    <PageWrapper>
+      <div className="flex-shrink-0 flex items-center justify-between px-6 py-4 border-b border-slate-800/80 mb-5">
+        <h1 className="text-lg font-bold text-slate-100">Tools</h1>
+        <p className="text-xs text-slate-500 mt-0.5">Developer utilities</p>
+      </div>
+
+      <div className="flex gap-5 h-full">
+        {/* Sidebar nav */}
+        <nav className="w-48 flex-shrink-0 space-y-1">
+          {TOOLS.map((tool) => (
+            <button
+              key={tool.id}
+              onClick={() => setActive(tool.id)}
+              className={clsx(
+                'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-colors',
+                active === tool.id
+                  ? 'bg-violet-600/20 text-violet-300 border border-violet-500/30'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800 border border-transparent'
+              )}
+            >
+              <span className={active === tool.id ? 'text-violet-400' : 'text-slate-500'}>
+                {tool.icon}
+              </span>
+              <div className="min-w-0">
+                <p className="text-xs font-medium truncate">{tool.label}</p>
+                <p className="text-[10px] text-slate-500 truncate">{tool.description}</p>
+              </div>
+            </button>
+          ))}
+        </nav>
+
+        {/* Tool panel */}
+        <div className="flex-1 min-w-0 bg-slate-800/60 border border-slate-700 rounded-2xl p-5 overflow-y-auto">
+          <h2 className="text-sm font-semibold text-slate-200 mb-4">{current.label}</h2>
+          {current.component}
+        </div>
+      </div>
+    </PageWrapper>
+  );
+};
+
+export default Tools;

@@ -1,0 +1,59 @@
+appId: com.workvault.app
+productName: WorkVault
+copyright: Copyright © 2024 WorkVault
+
+directories:
+  output: release
+  buildResources: public
+
+files:
+  - dist/**/*
+  - dist-electron/**/*
+  - node_modules/**/*
+  - package.json
+
+asar: true
+
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+  icon: public/icon.png
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  installerIcon: public/icon.png
+  uninstallerIcon: public/icon.png
+  installerHeaderIcon: public/icon.png
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: WorkVault
+
+mac:
+  target:
+    - dmg
+    - zip
+  icon: public/icon.png
+  category: public.app-category.productivity
+
+dmg:
+  contents:
+    - x: 130
+      y: 220
+    - x: 410
+      y: 220
+      type: link
+      path: /Applications
+
+linux:
+  target:
+    - AppImage
+    - deb
+  icon: public/icon.png
+  category: Utility
+
+publish:
+  provider: generic
+  url: ""

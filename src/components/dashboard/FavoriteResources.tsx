@@ -24,7 +24,7 @@ export const FavoriteResources: React.FC<FavoriteResourcesProps> = ({ stats }) =
   ].slice(0, 6);
 
   return (
-    <div className="rounded-2xl border border-slate-700/60 bg-slate-800/50 p-5 flex flex-col h-full">
+    <div className="rounded-2xl border border-slate-700/60 bg-slate-800/50 p-5 flex flex-col h-full min-h-0">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
@@ -45,7 +45,7 @@ export const FavoriteResources: React.FC<FavoriteResourcesProps> = ({ stats }) =
           <p className="text-xs text-slate-600 text-center">Star websites and links to pin them here for quick access.</p>
         </div>
       ) : (
-        <div className="flex flex-col gap-1.5">
+        <div className="flex-1 min-h-0 overflow-y-auto flex flex-col gap-1.5">
           {allFavorites.map((item) => {
             const meta = kindMeta[item.kind];
             const Icon = meta.icon;

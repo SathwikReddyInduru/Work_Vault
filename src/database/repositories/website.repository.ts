@@ -8,7 +8,7 @@ export interface WebsiteRow {
   name: string;
   url: string;
   username: string | null;
-  email: string | null;
+  email: string | null; // DB column name kept as-is; mapped to network_name in app layer
   password: string | null;
   notes: string | null;
   tags: string;
@@ -21,7 +21,7 @@ export interface CreateWebsiteDTO {
   name: string;
   url: string;
   username?: string;
-  email?: string;
+  network_name?: string;
   password?: string;
   notes?: string;
   tags?: string[];
@@ -48,7 +48,7 @@ function rowToWebsite(row: WebsiteRow) {
     name: row.name,
     url: row.url,
     username: decryptField(row.username),
-    email: decryptField(row.email),
+    network_name: decryptField(row.email), // stored in 'email' column
     password: decryptField(row.password),
     notes: row.notes,
     tags: JSON.parse(row.tags || '[]') as string[],
@@ -107,7 +107,7 @@ export const WebsiteRepository = {
       data.name,
       data.url,
       encryptField(data.username),
-      encryptField(data.email),
+      encryptField(data.network_name),
       encryptField(data.password),
       data.notes ?? null,
       JSON.stringify(data.tags ?? []),
@@ -140,7 +140,7 @@ export const WebsiteRepository = {
       data.name ?? existing.name,
       data.url ?? existing.url,
       data.username !== undefined ? encryptField(data.username) : existing.username,
-      data.email !== undefined ? encryptField(data.email) : existing.email,
+      data.network_name !== undefined ? encryptField(data.network_name) : existing.email,
       data.password !== undefined ? encryptField(data.password) : existing.password,
       data.notes !== undefined ? data.notes : existing.notes,
       data.tags !== undefined ? JSON.stringify(data.tags) : existing.tags,

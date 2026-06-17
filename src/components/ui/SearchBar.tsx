@@ -25,7 +25,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
       autoFocus={autoFocus}
-      className="input-base pl-9 pr-8 h-9 text-sm"
+      className="input-base w-full pl-9 pr-8 h-9 text-sm"
     />
     {value && (
       <button

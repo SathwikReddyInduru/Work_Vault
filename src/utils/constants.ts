@@ -11,6 +11,7 @@ export const ROUTES = {
   NOTES: '/notes',
   QUICK_LINKS: '/quick-links',
   TASKS: '/tasks',
+  DB_CONNECTIONS: '/db-connections',
   TOOLS: '/tools',
   SETTINGS: '/settings',
 } as const;

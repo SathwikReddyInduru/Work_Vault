@@ -18,7 +18,8 @@ export function handle<T>(
       return { success: true, data };
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      console.error(`[IPC:${channel}] Error:`, message);
+      // Log full stack in terminal so you can see exactly where it threw
+      console.error(`[IPC:${channel}] Error:`, err instanceof Error ? err : message);
       return { success: false, error: message };
     }
   });

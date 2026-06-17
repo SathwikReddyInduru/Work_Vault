@@ -12,6 +12,7 @@ import {
   Shield,
   ChevronLeft,
   ChevronRight,
+  Database,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useUIStore } from '@/store/ui.store';
@@ -20,6 +21,7 @@ const navItems = [
   { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
   { path: '/websites', icon: Globe, label: 'Websites' },
   { path: '/applications', icon: AppWindow, label: 'Applications' },
+  { path: '/db-connections', icon: Database, label: 'DB Connections' },
   { path: '/notes', icon: FileText, label: 'Notes' },
   { path: '/links', icon: Link2, label: 'Quick Links' },
   { path: '/tasks', icon: CheckSquare, label: 'Tasks' },
@@ -73,7 +75,7 @@ export const Sidebar: React.FC = () => {
     >
       {/* Logo */}
       <div className={clsx(
-        'flex items-center gap-3 px-4 py-5 border-b border-slate-800',
+        'flex items-center gap-3 px-4 h-20 border-b border-slate-800',
         sidebarCollapsed && 'justify-center px-2'
       )}>
         <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -100,7 +102,7 @@ export const Sidebar: React.FC = () => {
       </nav>
 
       {/* Bottom nav */}
-      <div className="px-2 pb-2 border-t border-slate-800 pt-2 flex flex-col gap-0.5">
+      <div className="px-2 py-2 border-t border-slate-800 flex flex-col gap-0.5">
         {bottomItems.map((item) => (
           <SidebarNavItem
             key={item.path}

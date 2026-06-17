@@ -17,6 +17,7 @@ const sanitize = (values: LinkFormValues) => ({
   url: values.url.trim(),
   category: values.category,
   description: values.description?.trim() || undefined,
+  icon: values.icon?.trim() ?? '',
   is_favorite: values.is_favorite ?? false,
 });
 
@@ -72,7 +73,7 @@ const QuickLinks: React.FC = () => {
   };
 
   const header = (
-    <div className="flex items-center justify-between gap-4">
+    <div className="flex items-center justify-between gap-4 w-full">
       <div className="flex items-center gap-3">
         <div className="w-8 h-8 bg-cyan-600/20 rounded-lg flex items-center justify-center">
           <Link2 size={16} className="text-cyan-400" />

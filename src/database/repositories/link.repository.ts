@@ -8,6 +8,7 @@ export interface LinkRow {
   url: string;
   category: string;
   description: string | null;
+  icon: string | null;
   is_favorite: number;
   created_at: string;
   updated_at: string;
@@ -18,11 +19,21 @@ export interface CreateLinkDTO {
   url: string;
   category?: string;
   description?: string;
+  icon?: string | null;
   is_favorite?: boolean;
 }
 
 export interface UpdateLinkDTO extends Partial<CreateLinkDTO> {
   id: number;
+}
+
+// Empty string, whitespace-only, null, or undefined all collapse to `undefined`
+// (meaning "not touched") — except when the caller explicitly clears the field,
+// in which case we want it written as NULL rather than an empty string.
+function normalizeIcon(icon: string | null | undefined): string | null | undefined {
+  if (icon === undefined) return undefined; // field omitted entirely — leave as-is
+  const trimmed = icon?.trim() ?? '';
+  return trimmed.length > 0 ? trimmed : null;
 }
 
 function rowToLink(row: LinkRow) {
@@ -32,6 +43,7 @@ function rowToLink(row: LinkRow) {
     url: row.url,
     category: row.category,
     description: row.description,
+    icon: row.icon,
     is_favorite: row.is_favorite === 1,
     created_at: row.created_at,
     updated_at: row.updated_at,
@@ -94,14 +106,15 @@ export const LinkRepository = {
   create(data: CreateLinkDTO) {
     const db = getDatabase();
     const stmt = db.prepare(`
-      INSERT INTO links (title, url, category, description, is_favorite)
-      VALUES (?, ?, ?, ?, ?)
+      INSERT INTO links (title, url, category, description, icon, is_favorite)
+      VALUES (?, ?, ?, ?, ?, ?)
     `);
     const result = stmt.run(
       data.title,
       data.url,
       data.category ?? 'General',
       data.description ?? null,
+      normalizeIcon(data.icon) ?? null,
       data.is_favorite ? 1 : 0
     );
     return this.findById(result.lastInsertRowid as number);
@@ -115,15 +128,18 @@ export const LinkRepository = {
     if (!existing) throw new Error(`Link with id ${data.id} not found`);
 
     const stmt = db.prepare(`
-      UPDATE links SET title = ?, url = ?, category = ?, description = ?, is_favorite = ?
+      UPDATE links SET title = ?, url = ?, category = ?, description = ?, icon = ?, is_favorite = ?
       WHERE id = ?
     `);
+
+    const icon = normalizeIcon(data.icon);
 
     stmt.run(
       data.title ?? existing.title,
       data.url ?? existing.url,
       data.category ?? existing.category,
       data.description !== undefined ? data.description : existing.description,
+      icon !== undefined ? icon : existing.icon,
       data.is_favorite !== undefined ? (data.is_favorite ? 1 : 0) : existing.is_favorite,
       data.id
     );

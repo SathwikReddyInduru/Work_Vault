@@ -5,6 +5,7 @@ import { TaskForm } from '@/components/tasks/TaskForm';
 import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { SearchBar } from '@/components/ui/SearchBar';
 import { useTasks } from '@/hooks/useTasks';
 import type { Task, TaskStatus } from '@/types/task.types';
 import type { TaskFormValues } from '@/utils/validators';
@@ -63,33 +64,31 @@ const Tasks: React.FC = () => {
     setDeleteTarget(null);
   };
 
-  return (
-    <PageWrapper>
-      {/* Page header */}
-      <div className="flex-shrink-0 flex items-center justify-between px-6 py-4 border-b border-slate-800/80 mb-5">
-        <div>
-          <h1 className="text-lg font-bold text-slate-100">Tasks</h1>
-          <p className="text-xs text-slate-500 mt-0.5">{tasks.length} task{tasks.length !== 1 ? 's' : ''} total</p>
+  const header = (
+    <div className="flex items-center justify-between gap-4 w-full">
+      <div className="flex items-center gap-3">
+        <div className="w-8 h-8 bg-amber-600/20 rounded-lg flex items-center justify-center">
+          <CheckSquare size={16} className="text-amber-400" />
         </div>
+        <div>
+          <h2 className="text-sm font-semibold text-slate-100">Tasks</h2>
+          <p className="text-xs text-slate-500">
+            {tasks.length} task{tasks.length !== 1 ? 's' : ''} total
+          </p>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-2">
+        <SearchBar value={search} onChange={setSearch} placeholder="Search tasks…" className="w-64" />
         <Button icon={<Plus size={15} />} size="sm" onClick={() => openAdd('todo')}>
           Add Task
         </Button>
       </div>
+    </div>
+  );
 
-      {/* Search */}
-      {tasks.length > 0 && (
-        <div className="relative mb-5">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search tasks…"
-            className="w-full max-w-sm bg-slate-800 border border-slate-700 text-slate-200 text-sm rounded-lg pl-9 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500 placeholder:text-slate-500 transition-colors"
-          />
-        </div>
-      )}
-
+  return (
+    <PageWrapper header={header}>
       {/* Empty state — no tasks at all */}
       {!loading && tasks.length === 0 && (
         <EmptyState
@@ -107,9 +106,14 @@ const Tasks: React.FC = () => {
       {/* Empty search result */}
       {!loading && tasks.length > 0 && filtered.length === 0 && search && (
         <EmptyState
-          icon={CheckSquare}
+          icon={Search}
           title="No matching tasks"
           description={`No tasks match "${search}".`}
+          action={
+            <Button variant="secondary" onClick={() => setSearch('')}>
+              Clear search
+            </Button>
+          }
         />
       )}
 

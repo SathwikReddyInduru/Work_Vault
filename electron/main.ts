@@ -13,6 +13,7 @@ import { registerTaskHandlers } from './ipc/tasks.ipc';
 import { registerSettingsHandlers } from './ipc/settings.ipc';
 import { registerDashboardHandlers } from './ipc/dashboard.ipc';
 import { registerUtilityHandlers } from './ipc/utility.ipc';
+import { registerDbConnectionHandlers } from './ipc/dbconnections.ipc';
 
 const isDev = !app.isPackaged;
 
@@ -73,6 +74,7 @@ function registerAllIPCHandlers(): void {
   registerSettingsHandlers();
   registerDashboardHandlers();
   registerUtilityHandlers();
+  registerDbConnectionHandlers();
 }
 
 // ── App lifecycle ─────────────────────────────────────────────────────────────

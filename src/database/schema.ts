@@ -80,6 +80,24 @@ export const CREATE_SETTINGS_TABLE = `
   )
 `;
 
+export const CREATE_DB_CONNECTIONS_TABLE = `
+  CREATE TABLE IF NOT EXISTS db_connections (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    type TEXT NOT NULL DEFAULT 'direct',
+    user_schema TEXT NOT NULL,
+    password TEXT,
+    host TEXT,
+    port INTEGER,
+    service_name TEXT,
+    tns_alias TEXT,
+    notes TEXT,
+    is_favorite INTEGER DEFAULT 0,
+    created_at TEXT DEFAULT (datetime('now')),
+    updated_at TEXT DEFAULT (datetime('now'))
+  )
+`;
+
 export const CREATE_UPDATED_AT_TRIGGER = (tableName: string) => `
   CREATE TRIGGER IF NOT EXISTS update_${tableName}_updated_at
   AFTER UPDATE ON ${tableName}
@@ -95,6 +113,7 @@ export const ALL_TABLES = [
   CREATE_NOTES_TABLE,
   CREATE_TASKS_TABLE,
   CREATE_SETTINGS_TABLE,
+  CREATE_DB_CONNECTIONS_TABLE,
 ];
 
 export const ALL_TRIGGERS = [
@@ -103,6 +122,7 @@ export const ALL_TRIGGERS = [
   'links',
   'notes',
   'tasks',
+  'db_connections',
 ].map(CREATE_UPDATED_AT_TRIGGER);
 
 export const DEFAULT_SETTINGS = [

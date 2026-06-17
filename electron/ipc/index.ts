@@ -9,3 +9,4 @@ export { registerTaskHandlers } from './tasks.ipc';
 export { registerSettingsHandlers } from './settings.ipc';
 export { registerDashboardHandlers } from './dashboard.ipc';
 export { registerUtilityHandlers } from './utility.ipc';
+export { registerDbConnectionHandlers } from './dbconnections.ipc';

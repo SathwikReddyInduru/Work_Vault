@@ -16,6 +16,7 @@ export interface QuickLink {
   url: string;
   category: string;
   description: string | null;
+  icon: string | null;
   is_favorite: boolean;
   created_at: string;
   updated_at: string;
@@ -26,6 +27,7 @@ export interface CreateLinkInput {
   url: string;
   category?: string;
   description?: string;
+  icon?: string | null;
   is_favorite?: boolean;
 }
 

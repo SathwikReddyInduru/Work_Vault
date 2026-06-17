@@ -9,6 +9,7 @@ const Applications = lazy(() => import('@/pages/Applications'));
 const Notes = lazy(() => import('@/pages/Notes'));
 const QuickLinks = lazy(() => import('@/pages/QuickLinks'));
 const Tasks = lazy(() => import('@/pages/Tasks'));
+const DbConnections = lazy(() => import('@/pages/DbConnections'));
 const Tools = lazy(() => import('@/pages/Tools'));
 const Settings = lazy(() => import('@/pages/Settings'));
 
@@ -24,6 +25,7 @@ export default function App() {
             <Route path="notes" element={<Notes />} />
             <Route path="links" element={<QuickLinks />} />
             <Route path="tasks" element={<Tasks />} />
+            <Route path="db-connections" element={<DbConnections />} />
             <Route path="tools" element={<Tools />} />
             <Route path="settings" element={<Settings />} />
             <Route path="*" element={<Navigate to="/" replace />} />

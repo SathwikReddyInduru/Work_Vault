@@ -45,11 +45,7 @@ export const websiteSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100, 'Name too long'),
   url: urlSchema,
   username: z.string().max(200).optional().or(z.literal('')),
-  email: z
-    .string()
-    .email('Invalid email address')
-    .optional()
-    .or(z.literal('')),
+  network_name: z.string().max(200).optional().or(z.literal('')),
   password: z.string().max(500).optional().or(z.literal('')),
   notes: z.string().max(5000).optional().or(z.literal('')),
   tags: tagsSchema,
@@ -81,6 +77,7 @@ export const linkSchema = z.object({
   url: urlSchema,
   category: z.string().min(1, 'Category is required').max(50).default('General'),
   description: z.string().max(500).optional().or(z.literal('')),
+  icon: z.string().max(10).optional().or(z.literal('')),
   is_favorite: z.boolean().optional().default(false),
 });
 
@@ -166,3 +163,23 @@ export function isValidJSON(text: string): boolean {
     return false;
   }
 }
+
+// ── DB Connection schema ──────────────────────────────────────────────────────
+
+export const dbConnectionSchema = z.object({
+  name: z.string().min(1, 'Name is required').max(100, 'Name too long'),
+  type: z.enum(['direct', 'tns', 'ldap']).default('direct'),
+  user_schema: z.string().min(1, 'User / Schema is required').max(200),
+  password: z.string().max(500).optional().or(z.literal('')),
+  host: z.string().max(255).optional().or(z.literal('')),
+  port: z
+    .union([z.number().int().min(1).max(65535), z.nan(), z.undefined()])
+    .optional()
+    .transform((v) => (v === undefined || Number.isNaN(v) ? undefined : v)),
+  service_name: z.string().max(255).optional().or(z.literal('')),
+  tns_alias: z.string().max(255).optional().or(z.literal('')),
+  notes: z.string().max(5000).optional().or(z.literal('')),
+  is_favorite: z.boolean().optional().default(false),
+});
+
+export type DbConnectionFormValues = z.infer<typeof dbConnectionSchema>;

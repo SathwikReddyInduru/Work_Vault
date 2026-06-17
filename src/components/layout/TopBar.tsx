@@ -20,7 +20,7 @@ export const TopBar: React.FC = () => {
   const title = pageTitles[location.pathname] ?? 'WorkVault';
 
   return (
-    <header className="h-14 bg-slate-900/80 border-b border-slate-800 flex items-center gap-4 px-5 flex-shrink-0 backdrop-blur-sm">
+    <header className="h-14 bg-slate-900/80 border-b border-slate-800 flex items-center gap-4 px-5 py-9 flex-shrink-0 backdrop-blur-sm">
       <h1 className="text-sm font-semibold text-slate-200 flex-shrink-0">{title}</h1>
 
       <div className="flex-1 max-w-md relative flex items-center">

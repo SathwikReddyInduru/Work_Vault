@@ -8,7 +8,7 @@ export const AppLayout: React.FC = () => (
   <div className="flex h-screen w-screen overflow-hidden bg-slate-950">
     <Sidebar />
     <div className="flex flex-col flex-1 overflow-hidden">
-      <TopBar />
+      {/* <TopBar /> */}
       <main className="flex-1 overflow-hidden">
         <Outlet />
       </main>

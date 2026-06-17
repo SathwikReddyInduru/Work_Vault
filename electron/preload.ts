@@ -77,6 +77,15 @@ const api: ElectronAPI = {
   // ── Crypto / Tools ────────────────────────────────────────────────────────
   generatePassword: (options) => invoke('utility:generatePassword', options),
   generateUUID: () => invoke('utility:generateUUID'),
+
+  // ── DB Connections ────────────────────────────────────────────────────────
+  getDbConnections: () => invoke('dbconnections:getAll'),
+  getDbConnection: (id) => invoke('dbconnections:getById', id),
+  searchDbConnections: (query) => invoke('dbconnections:search', query),
+  createDbConnection: (data) => invoke('dbconnections:create', data),
+  updateDbConnection: (data) => invoke('dbconnections:update', data),
+  deleteDbConnection: (id) => invoke('dbconnections:delete', id),
+  toggleDbConnectionFavorite: (id) => invoke('dbconnections:toggleFavorite', id),
 };
 
 // Expose only `electronAPI` — nothing else from Node/Electron world

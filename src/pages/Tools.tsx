@@ -5,7 +5,7 @@ import { JsonFormatter } from '@/components/tools/JsonFormatter';
 import { PasswordGenerator } from '@/components/tools/PasswordGenerator';
 import { UuidGenerator } from '@/components/tools/UuidGenerator';
 import { clsx } from 'clsx';
-import { Binary, Braces, Hash, ShieldCheck } from 'lucide-react';
+import { Binary, Braces, Hash, ShieldCheck, Wrench } from 'lucide-react';
 import React, { useState } from 'react';
 
 interface Tool {
@@ -17,6 +17,13 @@ interface Tool {
 }
 
 const TOOLS: Tool[] = [
+  {
+    id: 'json',
+    label: 'JSON Formatter',
+    icon: <Braces size={16} />,
+    description: 'Format and minify JSON',
+    component: <JsonFormatter />,
+  },
   {
     id: 'password',
     label: 'Password Generator',
@@ -32,13 +39,6 @@ const TOOLS: Tool[] = [
     component: <UuidGenerator />,
   },
   {
-    id: 'json',
-    label: 'JSON Formatter',
-    icon: <Braces size={16} />,
-    description: 'Format and minify JSON',
-    component: <JsonFormatter />,
-  },
-  {
     id: 'base64',
     label: 'Base64',
     icon: <Binary size={16} />,
@@ -51,13 +51,20 @@ const Tools: React.FC = () => {
   const [active, setActive] = useState(TOOLS[0].id);
   const current = TOOLS.find((t) => t.id === active)!;
 
-  return (
-    <PageWrapper>
-      <div className="flex-shrink-0 flex items-center justify-between px-6 py-4 border-b border-slate-800/80 mb-5">
-        <h1 className="text-lg font-bold text-slate-100">Tools</h1>
-        <p className="text-xs text-slate-500 mt-0.5">Developer utilities</p>
+  const header = (
+    <div className="flex items-center gap-3">
+      <div className="w-8 h-8 bg-violet-600/20 rounded-lg flex items-center justify-center">
+        <Wrench size={16} className="text-violet-400" />
       </div>
+      <div>
+        <h2 className="text-sm font-semibold text-slate-100">Tools</h2>
+        <p className="text-xs text-slate-500">Developer utilities</p>
+      </div>
+    </div>
+  );
 
+  return (
+    <PageWrapper header={header}>
       <div className="flex gap-5 h-full">
         {/* Sidebar nav */}
         <nav className="w-48 flex-shrink-0 space-y-1">
@@ -84,9 +91,9 @@ const Tools: React.FC = () => {
         </nav>
 
         {/* Tool panel */}
-        <div className="flex-1 min-w-0 bg-slate-800/60 border border-slate-700 rounded-2xl p-5 overflow-y-auto">
-          <h2 className="text-sm font-semibold text-slate-200 mb-4">{current.label}</h2>
-          {current.component}
+        <div className="flex-1 min-w-0 bg-slate-800/60 border border-slate-700 rounded-2xl p-5 overflow-hidden flex flex-col">
+          <h2 className="text-sm font-semibold text-slate-200 mb-4 flex-shrink-0">{current.label}</h2>
+          <div className="flex-1 min-h-0">{current.component}</div>
         </div>
       </div>
     </PageWrapper>

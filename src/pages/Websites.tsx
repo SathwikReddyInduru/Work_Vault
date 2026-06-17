@@ -19,7 +19,7 @@ const sanitize = (values: WebsiteFormValues) => ({
   name: values.name.trim(),
   url: values.url.trim(),
   username: values.username?.trim() || undefined,
-  email: values.email?.trim() || undefined,
+  network_name: values.network_name?.trim() || undefined,
   password: values.password?.trim() || undefined,
   notes: values.notes?.trim() || undefined,
   tags: values.tags ?? [],
@@ -41,7 +41,7 @@ const Websites: React.FC = () => {
     const list = !q
       ? websites
       : websites.filter((w) =>
-          [w.name, w.url, w.username, w.email, ...w.tags]
+          [w.name, w.url, w.username, w.network_name, ...w.tags]
             .filter(Boolean)
             .some((field) => field!.toLowerCase().includes(q))
         );
@@ -79,7 +79,7 @@ const Websites: React.FC = () => {
   };
 
   const header = (
-    <div className="flex items-center justify-between gap-4">
+    <div className="flex items-center justify-between gap-4 w-full">
       <div className="flex items-center gap-3">
         <div className="w-8 h-8 bg-blue-600/20 rounded-lg flex items-center justify-center">
           <Globe size={16} className="text-blue-400" />

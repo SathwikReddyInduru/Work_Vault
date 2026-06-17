@@ -14,26 +14,27 @@ type RecentItem = {
 };
 
 const kindMeta = {
-  website:     { icon: Globe,      color: 'text-blue-400',   bg: 'bg-blue-500/10',   route: '/websites'     },
-  application: { icon: AppWindow,  color: 'text-purple-400', bg: 'bg-purple-500/10', route: '/applications' },
-  note:        { icon: FileText,   color: 'text-emerald-400',bg: 'bg-emerald-500/10',route: '/notes'        },
-  link:        { icon: Link2,      color: 'text-cyan-400',   bg: 'bg-cyan-500/10',   route: '/links'        },
+  website:     { icon: Globe,      color: 'text-blue-400',    bg: 'bg-blue-500/10',    route: '/websites'     },
+  application: { icon: AppWindow,  color: 'text-purple-400',  bg: 'bg-purple-500/10',  route: '/applications' },
+  note:        { icon: FileText,   color: 'text-emerald-400', bg: 'bg-emerald-500/10', route: '/notes'        },
+  link:        { icon: Link2,      color: 'text-cyan-400',    bg: 'bg-cyan-500/10',    route: '/links'        },
 };
 
 export const RecentItems: React.FC<RecentItemsProps> = ({ stats }) => {
   const navigate = useNavigate();
 
+  // Only last 3 items across all types
   const items: RecentItem[] = [
     ...stats.recentWebsites.map((w) => ({ kind: 'website' as const, id: w.id, title: w.name, subtitle: extractHostname(w.url) || w.url, time: w.created_at })),
     ...stats.recentApplications.map((a) => ({ kind: 'application' as const, id: a.id, title: a.name, subtitle: a.environment, time: a.created_at })),
     ...stats.recentNotes.map((n) => ({ kind: 'note' as const, id: n.id, title: n.title, subtitle: n.category, time: n.created_at })),
     ...stats.recentLinks.map((l) => ({ kind: 'link' as const, id: l.id, title: l.title, subtitle: l.category, time: l.created_at })),
-  ].sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()).slice(0, 7);
+  ].sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()).slice(0, 4);
 
   return (
-    <div className="rounded-2xl border border-slate-700/60 bg-slate-800/50 p-5 flex flex-col h-full">
+    <div className="rounded-2xl border border-slate-700/60 bg-slate-800/50 p-5 flex flex-col h-full min-h-0">
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-4 flex-shrink-0">
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-lg bg-slate-700/60 flex items-center justify-center">
             <Clock size={13} className="text-slate-400" />
@@ -52,7 +53,7 @@ export const RecentItems: React.FC<RecentItemsProps> = ({ stats }) => {
           <p className="text-xs text-slate-600 text-center">No items yet — start adding credentials, notes or links.</p>
         </div>
       ) : (
-        <div className="flex flex-col gap-0.5">
+        <div className="flex-1 overflow-y-auto flex flex-col gap-0.5">
           {items.map((item, idx) => {
             const meta = kindMeta[item.kind];
             const Icon = meta.icon;

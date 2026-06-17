@@ -82,7 +82,7 @@ const Applications: React.FC = () => {
   };
 
   const header = (
-    <div className="flex items-center justify-between gap-4">
+    <div className="flex items-center justify-between gap-5 w-full">
       <div className="flex items-center gap-3">
         <div className="w-8 h-8 bg-purple-600/20 rounded-lg flex items-center justify-center">
           <AppWindow size={16} className="text-purple-400" />

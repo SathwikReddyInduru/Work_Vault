@@ -5,7 +5,7 @@ export interface Website {
   name: string;
   url: string;
   username: string | null;
-  email: string | null;
+  network_name: string | null;
   password: string | null;
   notes: string | null;
   tags: string[];
@@ -18,7 +18,7 @@ export interface CreateWebsiteInput {
   name: string;
   url: string;
   username?: string;
-  email?: string;
+  network_name?: string;
   password?: string;
   notes?: string;
   tags?: string[];

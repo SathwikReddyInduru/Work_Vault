@@ -22,7 +22,7 @@ const emptyDefaults: WebsiteFormValues = {
   name: '',
   url: '',
   username: '',
-  email: '',
+  network_name: '',
   password: '',
   notes: '',
   tags: [],
@@ -35,7 +35,7 @@ const toDefaults = (website?: Website | null): WebsiteFormValues =>
         name: website.name,
         url: website.url,
         username: website.username ?? '',
-        email: website.email ?? '',
+        network_name: website.network_name ?? '',
         password: website.password ?? '',
         notes: website.notes ?? '',
         tags: website.tags ?? [],
@@ -154,10 +154,10 @@ export const WebsiteForm: React.FC<WebsiteFormProps> = ({
             {...register('username')}
           />
           <Input
-            label="Email"
+            label="Network Name"
             placeholder="Optional"
-            error={errors.email?.message}
-            {...register('email')}
+            error={errors.network_name?.message}
+            {...register('network_name')}
           />
         </div>
 

@@ -1,16 +1,16 @@
 // src/components/dashboard/QuickActions.tsx
 import { clsx } from 'clsx';
-import { AppWindow, CheckSquare, FileText, Globe, Link2, Wrench, Zap } from 'lucide-react';
+import { AppWindow, CheckSquare, Database, FileText, Globe, Link2, Zap } from 'lucide-react';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const actions = [
-  { label: 'Website',     icon: Globe,       route: '/websites',     color: 'text-blue-400',   bg: 'bg-blue-500/10',   hover: 'hover:bg-blue-500/20 hover:border-blue-500/30'   },
-  { label: 'App',         icon: AppWindow,   route: '/applications', color: 'text-purple-400', bg: 'bg-purple-500/10', hover: 'hover:bg-purple-500/20 hover:border-purple-500/30' },
-  { label: 'Note',        icon: FileText,    route: '/notes',        color: 'text-emerald-400',bg: 'bg-emerald-500/10',hover: 'hover:bg-emerald-500/20 hover:border-emerald-500/30'},
-  { label: 'Link',        icon: Link2,       route: '/links',        color: 'text-cyan-400',   bg: 'bg-cyan-500/10',   hover: 'hover:bg-cyan-500/20 hover:border-cyan-500/30'   },
-  { label: 'Task',        icon: CheckSquare, route: '/tasks',        color: 'text-amber-400',  bg: 'bg-amber-500/10',  hover: 'hover:bg-amber-500/20 hover:border-amber-500/30'  },
-  { label: 'Tools',       icon: Wrench,      route: '/tools',        color: 'text-orange-400', bg: 'bg-orange-500/10', hover: 'hover:bg-orange-500/20 hover:border-orange-500/30' },
+  { label: 'Website',     icon: Globe,       route: '/websites',        color: 'text-blue-400',   bg: 'bg-blue-500/10',   hover: 'hover:bg-blue-500/20 hover:border-blue-500/30'    },
+  { label: 'App',         icon: AppWindow,   route: '/applications',    color: 'text-purple-400', bg: 'bg-purple-500/10', hover: 'hover:bg-purple-500/20 hover:border-purple-500/30' },
+  { label: 'DB Conn',     icon: Database,    route: '/db-connections',  color: 'text-blue-300',   bg: 'bg-blue-400/10',   hover: 'hover:bg-blue-400/20 hover:border-blue-400/30'    },
+  { label: 'Note',        icon: FileText,    route: '/notes',           color: 'text-emerald-400',bg: 'bg-emerald-500/10',hover: 'hover:bg-emerald-500/20 hover:border-emerald-500/30'},
+  { label: 'Link',        icon: Link2,       route: '/links',           color: 'text-cyan-400',   bg: 'bg-cyan-500/10',   hover: 'hover:bg-cyan-500/20 hover:border-cyan-500/30'    },
+  { label: 'Task',        icon: CheckSquare, route: '/tasks',           color: 'text-amber-400',  bg: 'bg-amber-500/10',  hover: 'hover:bg-amber-500/20 hover:border-amber-500/30'  },
 ];
 
 export const QuickActions: React.FC = () => {

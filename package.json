@@ -6,9 +6,7 @@
   "author": "WorkVault",
   "private": true,
   "scripts": {
-    "dev": "concurrently -k \"npm run dev:vite\" \"npm run dev:electron\"",
-    "dev:vite": "vite",
-    "dev:electron": "wait-on http://localhost:5173 && electron .",
+    "dev": "vite",
     "build": "npm run build:vite && npm run build:electron",
     "build:vite": "vite build",
     "build:electron": "tsc -p tsconfig.electron.json",

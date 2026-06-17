@@ -6,6 +6,7 @@ import type { Application, CreateApplicationInput, UpdateApplicationInput } from
 import type { QuickLink, CreateLinkInput, UpdateLinkInput } from './link.types';
 import type { Note, CreateNoteInput, UpdateNoteInput } from './note.types';
 import type { Task, CreateTaskInput, UpdateTaskInput, TaskStatus } from './task.types';
+import type { DbConnection, CreateDbConnectionInput, UpdateDbConnectionInput } from './dbconnection.types';
 
 // Generic IPC response wrapper
 export interface IPCResponse<T = unknown> {
@@ -110,6 +111,15 @@ export interface ElectronAPI {
   // ── Crypto / Tools ────────────────────────────────────────────────────────
   generatePassword: (options: PasswordOptions) => Promise<IPCResponse<string>>;
   generateUUID: () => Promise<IPCResponse<string>>;
+
+  // ── DB Connections ────────────────────────────────────────────────────────
+  getDbConnections: () => Promise<IPCResponse<DbConnection[]>>;
+  getDbConnection: (id: number) => Promise<IPCResponse<DbConnection>>;
+  searchDbConnections: (query: string) => Promise<IPCResponse<DbConnection[]>>;
+  createDbConnection: (data: CreateDbConnectionInput) => Promise<IPCResponse<DbConnection>>;
+  updateDbConnection: (data: UpdateDbConnectionInput) => Promise<IPCResponse<DbConnection>>;
+  deleteDbConnection: (id: number) => Promise<IPCResponse<boolean>>;
+  toggleDbConnectionFavorite: (id: number) => Promise<IPCResponse<DbConnection>>;
 }
 
 export interface PasswordOptions {

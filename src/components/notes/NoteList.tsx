@@ -1,8 +1,6 @@
-import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { SearchBar } from '@/components/ui/SearchBar';
 import type { Note } from '@/types/note.types';
-import { FileText, Plus, Search } from 'lucide-react';
+import { FileText, Search } from 'lucide-react';
 import React, { useMemo } from 'react';
 import { NoteCard } from './NoteCard';
 
@@ -22,7 +20,6 @@ export const NoteList: React.FC<NoteListProps> = ({
   query,
   onQueryChange,
   onSelect,
-  onNew,
   onTogglePin,
 }) => {
   const filtered = useMemo(() => {
@@ -30,10 +27,10 @@ export const NoteList: React.FC<NoteListProps> = ({
     const list = !q
       ? notes
       : notes.filter((n) =>
-          [n.title, n.content, n.category, ...n.tags]
-            .filter(Boolean)
-            .some((field) => field!.toLowerCase().includes(q))
-        );
+        [n.title, n.content, n.category, ...n.tags]
+          .filter(Boolean)
+          .some((field) => field!.toLowerCase().includes(q))
+      );
 
     return [...list].sort((a, b) => {
       if (a.is_pinned !== b.is_pinned) return a.is_pinned ? -1 : 1;
@@ -42,28 +39,25 @@ export const NoteList: React.FC<NoteListProps> = ({
   }, [notes, query]);
 
   return (
-    <div className="flex flex-col h-full w-80 flex-shrink-0 border-r border-slate-800">
-      <div className="flex-shrink-0 flex flex-col gap-2 p-3 border-b border-slate-800">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-slate-100 px-1">Notes</h2>
-          <Button variant="ghost" size="sm" icon={<Plus size={13} />} onClick={onNew}>
-            New
-          </Button>
+    <div className="flex flex-col h-full w-72 flex-shrink-0 border-r border-slate-800">
+
+      {/* Recent pill header */}
+      <div className="flex-shrink-0 pt-4 pb-2">
+        <div className="flex flex-col items-center">
+          <span className="mt-4 text-[10px] font-semibold text-slate-500 uppercase tracking-wider">
+            Recent
+          </span>
+
+          <div className="mt-5 w-[80%] h-px bg-slate-700 rounded-full" />
         </div>
-        <SearchBar value={query} onChange={onQueryChange} placeholder="Search notes..." />
       </div>
 
-      <div className="flex-1 overflow-y-auto p-2">
+      <div className="flex-1 overflow-y-auto p-4">
         {notes.length === 0 ? (
           <EmptyState
             icon={FileText}
             title="No notes yet"
-            description="Create your first note."
-            action={
-              <Button variant="primary" size="sm" icon={<Plus size={13} />} onClick={onNew}>
-                New Note
-              </Button>
-            }
+            description="Create your first note using the button above."
           />
         ) : filtered.length === 0 ? (
           <EmptyState

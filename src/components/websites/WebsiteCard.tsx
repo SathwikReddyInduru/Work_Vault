@@ -5,15 +5,14 @@ import type { Website } from '@/types/website.types';
 import { extractHostname, formatRelativeTime, maskPassword } from '@/utils/formatters';
 import { clsx } from 'clsx';
 import {
-    Copy,
-    ExternalLink,
-    Eye, EyeOff,
-    Globe,
-    Mail,
-    Pencil,
-    Star,
-    Trash2,
-    User,
+  Copy,
+  ExternalLink,
+  Eye, EyeOff,
+  Globe,
+  Pencil,
+  Star,
+  Trash2,
+  User,
 } from 'lucide-react';
 import React, { useState } from 'react';
 
@@ -31,11 +30,24 @@ export const WebsiteCard: React.FC<WebsiteCardProps> = ({
   onToggleFavorite,
 }) => {
   const [showPassword, setShowPassword] = useState(false);
-  const { copy } = useClipboard();
+  const { copy, copySequential } = useClipboard();
 
   const hostname = extractHostname(website.url);
 
-  const openUrl = () => {
+  // Copies all credentials first, THEN opens the URL so the app
+  // keeps focus during the entire copy sequence.
+  const openUrl = async () => {
+    const credentials = [
+      website.network_name ? { value: website.network_name, label: 'Network name copied' } : null,
+      website.username     ? { value: website.username,     label: 'Username copied' }      : null,
+      website.password     ? { value: website.password,     label: 'Password copied' }      : null,
+    ].filter(Boolean) as { value: string; label: string }[];
+
+    if (credentials.length > 0) {
+      await copySequential(credentials, 1000);
+    }
+
+    // Open URL only after all copies are done
     if (window.electronAPI) {
       window.electronAPI.openExternal(website.url);
     } else {
@@ -75,6 +87,20 @@ export const WebsiteCard: React.FC<WebsiteCardProps> = ({
 
       {/* Credentials */}
       <div className="flex flex-col gap-1.5 text-xs">
+        {website.network_name && (
+          <div className="flex items-center justify-between gap-2 px-2.5 py-1.5 bg-slate-900/60 rounded-lg">
+            <span className="flex items-center gap-1.5 text-slate-400 min-w-0">
+              <Globe size={12} className="flex-shrink-0" />
+              <span className="truncate">{website.network_name}</span>
+            </span>
+            <button
+              onClick={() => copy(website.network_name!, 'Network name copied')}
+              className="flex-shrink-0 text-slate-500 hover:text-slate-200 transition-colors"
+            >
+              <Copy size={12} />
+            </button>
+          </div>
+        )}
         {website.username && (
           <div className="flex items-center justify-between gap-2 px-2.5 py-1.5 bg-slate-900/60 rounded-lg">
             <span className="flex items-center gap-1.5 text-slate-400 min-w-0">
@@ -83,20 +109,6 @@ export const WebsiteCard: React.FC<WebsiteCardProps> = ({
             </span>
             <button
               onClick={() => copy(website.username!, 'Username copied')}
-              className="flex-shrink-0 text-slate-500 hover:text-slate-200 transition-colors"
-            >
-              <Copy size={12} />
-            </button>
-          </div>
-        )}
-        {website.email && (
-          <div className="flex items-center justify-between gap-2 px-2.5 py-1.5 bg-slate-900/60 rounded-lg">
-            <span className="flex items-center gap-1.5 text-slate-400 min-w-0">
-              <Mail size={12} className="flex-shrink-0" />
-              <span className="truncate">{website.email}</span>
-            </span>
-            <button
-              onClick={() => copy(website.email!, 'Email copied')}
               className="flex-shrink-0 text-slate-500 hover:text-slate-200 transition-colors"
             >
               <Copy size={12} />
@@ -124,7 +136,7 @@ export const WebsiteCard: React.FC<WebsiteCardProps> = ({
             </span>
           </div>
         )}
-        {!website.username && !website.email && !website.password && (
+        {!website.network_name && !website.username && !website.password && (
           <p className="text-slate-600 italic px-2.5 py-1.5">No credentials saved</p>
         )}
       </div>

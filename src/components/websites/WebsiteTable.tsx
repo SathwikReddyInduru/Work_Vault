@@ -4,12 +4,12 @@ import type { Website } from '@/types/website.types';
 import { extractHostname, formatRelativeTime, maskPassword } from '@/utils/formatters';
 import { clsx } from 'clsx';
 import {
-    Copy, ExternalLink,
-    Eye, EyeOff,
-    Globe,
-    Pencil,
-    Star,
-    Trash2,
+  Copy, ExternalLink,
+  Eye, EyeOff,
+  Globe,
+  Pencil,
+  Star,
+  Trash2,
 } from 'lucide-react';
 import React, { useState } from 'react';
 
@@ -33,7 +33,7 @@ export const WebsiteTable: React.FC<WebsiteTableProps> = ({
           <tr className="border-b border-slate-700/60 bg-slate-900/40">
             <th className="text-left font-medium text-slate-400 text-xs uppercase tracking-wide px-4 py-3 w-8" />
             <th className="text-left font-medium text-slate-400 text-xs uppercase tracking-wide px-4 py-3">Name</th>
-            <th className="text-left font-medium text-slate-400 text-xs uppercase tracking-wide px-4 py-3">Username / Email</th>
+            <th className="text-left font-medium text-slate-400 text-xs uppercase tracking-wide px-4 py-3">Network / Username</th>
             <th className="text-left font-medium text-slate-400 text-xs uppercase tracking-wide px-4 py-3">Password</th>
             <th className="text-left font-medium text-slate-400 text-xs uppercase tracking-wide px-4 py-3">Tags</th>
             <th className="text-left font-medium text-slate-400 text-xs uppercase tracking-wide px-4 py-3">Updated</th>
@@ -70,9 +70,22 @@ const WebsiteTableRow: React.FC<RowProps> = ({
   onToggleFavorite,
 }) => {
   const [showPassword, setShowPassword] = useState(false);
-  const { copy } = useClipboard();
+  const { copy, copySequential } = useClipboard();
 
-  const openUrl = () => {
+  // Copies all credentials first, THEN opens the URL so the app
+  // keeps focus during the entire copy sequence.
+  const openUrl = async () => {
+    const credentials = [
+      website.network_name ? { value: website.network_name, label: 'Network name copied' } : null,
+      website.username     ? { value: website.username,     label: 'Username copied' }      : null,
+      website.password     ? { value: website.password,     label: 'Password copied' }      : null,
+    ].filter(Boolean) as { value: string; label: string }[];
+
+    if (credentials.length > 0) {
+      await copySequential(credentials, 1000);
+    }
+
+    // Open URL only after all copies are done
     if (window.electronAPI) {
       window.electronAPI.openExternal(website.url);
     } else {
@@ -111,9 +124,9 @@ const WebsiteTableRow: React.FC<RowProps> = ({
 
       <td className="px-4 py-3">
         <div className="flex flex-col gap-0.5 text-xs text-slate-400 max-w-[180px]">
+          {website.network_name && <span className="truncate text-slate-300">{website.network_name}</span>}
           {website.username && <span className="truncate">{website.username}</span>}
-          {website.email && <span className="truncate text-slate-500">{website.email}</span>}
-          {!website.username && !website.email && <span className="text-slate-600 italic">—</span>}
+          {!website.network_name && !website.username && <span className="text-slate-600 italic">—</span>}
         </div>
       </td>
 

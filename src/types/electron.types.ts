@@ -1,12 +1,12 @@
 // src/types/electron.types.ts
 // Types for safe IPC communication between Electron main and React renderer
 
-import type { Website, CreateWebsiteInput, UpdateWebsiteInput } from './website.types';
 import type { Application, CreateApplicationInput, UpdateApplicationInput } from './application.types';
-import type { QuickLink, CreateLinkInput, UpdateLinkInput } from './link.types';
-import type { Note, CreateNoteInput, UpdateNoteInput } from './note.types';
-import type { Task, CreateTaskInput, UpdateTaskInput, TaskStatus } from './task.types';
-import type { DbConnection, CreateDbConnectionInput, UpdateDbConnectionInput } from './dbconnection.types';
+import type { CreateDbConnectionInput, DbConnection, UpdateDbConnectionInput } from './dbconnection.types';
+import type { CreateLinkInput, QuickLink, UpdateLinkInput } from './link.types';
+import type { CreateNoteInput, Note, UpdateNoteInput } from './note.types';
+import type { CreateTaskInput, Task, TaskStatus, UpdateTaskInput } from './task.types';
+import type { CreateWebsiteInput, UpdateWebsiteInput, Website } from './website.types';
 
 // Generic IPC response wrapper
 export interface IPCResponse<T = unknown> {
@@ -48,6 +48,12 @@ export interface ImportResult {
 
 // The full IPC API exposed on window.electronAPI
 export interface ElectronAPI {
+  // ── Login ──────────────────────────────────────────────────────────────
+  authHasPin: () => Promise<boolean>;
+  authVerifyPin: (pin: string) => Promise<boolean>;
+  authSetPin: (pin: string) => Promise<boolean>;
+  authRemovePin: () => Promise<boolean>;
+
   // ── Websites ──────────────────────────────────────────────────────────────
   getWebsites: () => Promise<IPCResponse<Website[]>>;
   getWebsite: (id: number) => Promise<IPCResponse<Website>>;

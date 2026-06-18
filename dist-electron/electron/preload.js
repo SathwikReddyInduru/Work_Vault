@@ -68,7 +68,12 @@ const api = {
   createDbConnection: (data) => invoke("dbconnections:create", data),
   updateDbConnection: (data) => invoke("dbconnections:update", data),
   deleteDbConnection: (id) => invoke("dbconnections:delete", id),
-  toggleDbConnectionFavorite: (id) => invoke("dbconnections:toggleFavorite", id)
+  toggleDbConnectionFavorite: (id) => invoke("dbconnections:toggleFavorite", id),
+  // ── Auth ──────────────────────────────────────────────────────────────────
+  authHasPin: () => invoke("auth:hasPin").then((r) => r.data ?? false),
+  authVerifyPin: (pin) => invoke("auth:verifyPin", pin).then((r) => r.data === true),
+  authSetPin: (pin) => invoke("auth:setPin", pin).then((r) => r.data === true),
+  authRemovePin: () => invoke("auth:removePin").then((r) => r.data === true)
 };
 electron.contextBridge.exposeInMainWorld("electronAPI", api);
 //# sourceMappingURL=preload.js.map

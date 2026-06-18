@@ -355,161 +355,13 @@ function decryptField$2(value) {
   if (!value) return null;
   return EncryptionService.decrypt(value);
 }
-function rowToWebsite(row) {
-  return {
-    id: row.id,
-    name: row.name,
-    url: row.url,
-    username: decryptField$2(row.username),
-    network_name: decryptField$2(row.email),
-    // stored in 'email' column
-    password: decryptField$2(row.password),
-    notes: row.notes,
-    tags: JSON.parse(row.tags || "[]"),
-    is_favorite: row.is_favorite === 1,
-    created_at: row.created_at,
-    updated_at: row.updated_at
-  };
-}
-const WebsiteRepository = {
-  findAll() {
-    const db2 = getDatabase();
-    const rows = db2.prepare("SELECT * FROM websites ORDER BY is_favorite DESC, updated_at DESC").all();
-    return rows.map(rowToWebsite);
-  },
-  findById(id) {
-    const db2 = getDatabase();
-    const row = db2.prepare("SELECT * FROM websites WHERE id = ?").get(id);
-    if (!row) return null;
-    return rowToWebsite(row);
-  },
-  search(query) {
-    const db2 = getDatabase();
-    const like = `%${query}%`;
-    const rows = db2.prepare(
-      `SELECT * FROM websites
-         WHERE name LIKE ? OR url LIKE ? OR email LIKE ? OR notes LIKE ?
-         ORDER BY is_favorite DESC, updated_at DESC`
-    ).all(like, like, like, like);
-    return rows.map(rowToWebsite);
-  },
-  findFavorites() {
-    const db2 = getDatabase();
-    const rows = db2.prepare("SELECT * FROM websites WHERE is_favorite = 1 ORDER BY updated_at DESC").all();
-    return rows.map(rowToWebsite);
-  },
-  create(data) {
-    const db2 = getDatabase();
-    const stmt = db2.prepare(`
-      INSERT INTO websites (name, url, username, email, password, notes, tags, is_favorite)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `);
-    const result = stmt.run(
-      data.name,
-      data.url,
-      encryptField$2(data.username),
-      encryptField$2(data.network_name),
-      encryptField$2(data.password),
-      data.notes ?? null,
-      JSON.stringify(data.tags ?? []),
-      data.is_favorite ? 1 : 0
-    );
-    return this.findById(result.lastInsertRowid);
-  },
-  update(data) {
-    const db2 = getDatabase();
-    const existing = db2.prepare("SELECT * FROM websites WHERE id = ?").get(data.id);
-    if (!existing) throw new Error(`Website with id ${data.id} not found`);
-    const stmt = db2.prepare(`
-      UPDATE websites SET
-        name = ?,
-        url = ?,
-        username = ?,
-        email = ?,
-        password = ?,
-        notes = ?,
-        tags = ?,
-        is_favorite = ?
-      WHERE id = ?
-    `);
-    stmt.run(
-      data.name ?? existing.name,
-      data.url ?? existing.url,
-      data.username !== void 0 ? encryptField$2(data.username) : existing.username,
-      data.network_name !== void 0 ? encryptField$2(data.network_name) : existing.email,
-      data.password !== void 0 ? encryptField$2(data.password) : existing.password,
-      data.notes !== void 0 ? data.notes : existing.notes,
-      data.tags !== void 0 ? JSON.stringify(data.tags) : existing.tags,
-      data.is_favorite !== void 0 ? data.is_favorite ? 1 : 0 : existing.is_favorite,
-      data.id
-    );
-    return this.findById(data.id);
-  },
-  toggleFavorite(id) {
-    const db2 = getDatabase();
-    db2.prepare(
-      "UPDATE websites SET is_favorite = CASE WHEN is_favorite = 1 THEN 0 ELSE 1 END WHERE id = ?"
-    ).run(id);
-    return this.findById(id);
-  },
-  delete(id) {
-    const db2 = getDatabase();
-    const result = db2.prepare("DELETE FROM websites WHERE id = ?").run(id);
-    return result.changes > 0;
-  },
-  count() {
-    const db2 = getDatabase();
-    const row = db2.prepare("SELECT COUNT(*) as count FROM websites").get();
-    return row.count;
-  },
-  getRecent(limit = 5) {
-    const db2 = getDatabase();
-    const rows = db2.prepare("SELECT * FROM websites ORDER BY created_at DESC LIMIT ?").all(limit);
-    return rows.map(rowToWebsite);
-  }
-};
-function registerWebsiteHandlers() {
-  handle("websites:getAll", () => WebsiteRepository.findAll());
-  handle(
-    "websites:getById",
-    (id) => WebsiteRepository.findById(id)
-  );
-  handle(
-    "websites:search",
-    (query) => WebsiteRepository.search(query)
-  );
-  handle(
-    "websites:create",
-    (data) => WebsiteRepository.create(data)
-  );
-  handle(
-    "websites:update",
-    (data) => WebsiteRepository.update(data)
-  );
-  handle(
-    "websites:delete",
-    (id) => WebsiteRepository.delete(id)
-  );
-  handle(
-    "websites:toggleFavorite",
-    (id) => WebsiteRepository.toggleFavorite(id)
-  );
-}
-function encryptField$1(value) {
-  if (!value) return null;
-  return EncryptionService.encrypt(value);
-}
-function decryptField$1(value) {
-  if (!value) return null;
-  return EncryptionService.decrypt(value);
-}
 function rowToApplication(row) {
   return {
     id: row.id,
     name: row.name,
     url: row.url,
-    username: decryptField$1(row.username),
-    password: decryptField$1(row.password),
+    username: decryptField$2(row.username),
+    password: decryptField$2(row.password),
     environment: row.environment,
     notes: row.notes,
     is_favorite: row.is_favorite === 1,
@@ -558,8 +410,8 @@ const ApplicationRepository = {
     const result = stmt.run(
       data.name,
       data.url ?? null,
-      encryptField$1(data.username),
-      encryptField$1(data.password),
+      encryptField$2(data.username),
+      encryptField$2(data.password),
       data.environment ?? "production",
       data.notes ?? null,
       data.is_favorite ? 1 : 0
@@ -584,8 +436,8 @@ const ApplicationRepository = {
     stmt.run(
       data.name ?? existing.name,
       data.url !== void 0 ? data.url : existing.url,
-      data.username !== void 0 ? encryptField$1(data.username) : existing.username,
-      data.password !== void 0 ? encryptField$1(data.password) : existing.password,
+      data.username !== void 0 ? encryptField$2(data.username) : existing.username,
+      data.password !== void 0 ? encryptField$2(data.password) : existing.password,
       data.environment ?? existing.environment,
       data.notes !== void 0 ? data.notes : existing.notes,
       data.is_favorite !== void 0 ? data.is_favorite ? 1 : 0 : existing.is_favorite,
@@ -643,6 +495,157 @@ function registerApplicationHandlers() {
     (id) => ApplicationRepository.toggleFavorite(id)
   );
 }
+function hashPin(pin) {
+  return crypto.createHash("sha256").update(`workvault:${pin}`).digest("hex");
+}
+function registerAuthHandlers() {
+  handle("auth:hasPin", () => {
+    const db2 = getDatabase();
+    const row = db2.prepare("SELECT value FROM settings WHERE key = 'auth_pin'").get();
+    return !!(row == null ? void 0 : row.value);
+  });
+  handle("auth:verifyPin", (pin) => {
+    const db2 = getDatabase();
+    const row = db2.prepare("SELECT value FROM settings WHERE key = 'auth_pin'").get();
+    if (!(row == null ? void 0 : row.value)) return false;
+    return row.value === hashPin(pin);
+  });
+  handle("auth:setPin", (pin) => {
+    const db2 = getDatabase();
+    db2.prepare(`
+      INSERT INTO settings (key, value)
+      VALUES ('auth_pin', ?)
+      ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')
+    `).run(hashPin(pin));
+    return true;
+  });
+  handle("auth:removePin", () => {
+    const db2 = getDatabase();
+    db2.prepare("DELETE FROM settings WHERE key = 'auth_pin'").run();
+    return true;
+  });
+}
+function encryptField$1(value) {
+  if (!value) return null;
+  return EncryptionService.encrypt(value);
+}
+function decryptField$1(value) {
+  if (!value) return null;
+  return EncryptionService.decrypt(value);
+}
+function rowToWebsite(row) {
+  return {
+    id: row.id,
+    name: row.name,
+    url: row.url,
+    username: decryptField$1(row.username),
+    network_name: decryptField$1(row.email),
+    // stored in 'email' column
+    password: decryptField$1(row.password),
+    notes: row.notes,
+    tags: JSON.parse(row.tags || "[]"),
+    is_favorite: row.is_favorite === 1,
+    created_at: row.created_at,
+    updated_at: row.updated_at
+  };
+}
+const WebsiteRepository = {
+  findAll() {
+    const db2 = getDatabase();
+    const rows = db2.prepare("SELECT * FROM websites ORDER BY is_favorite DESC, updated_at DESC").all();
+    return rows.map(rowToWebsite);
+  },
+  findById(id) {
+    const db2 = getDatabase();
+    const row = db2.prepare("SELECT * FROM websites WHERE id = ?").get(id);
+    if (!row) return null;
+    return rowToWebsite(row);
+  },
+  search(query) {
+    const db2 = getDatabase();
+    const like = `%${query}%`;
+    const rows = db2.prepare(
+      `SELECT * FROM websites
+         WHERE name LIKE ? OR url LIKE ? OR email LIKE ? OR notes LIKE ?
+         ORDER BY is_favorite DESC, updated_at DESC`
+    ).all(like, like, like, like);
+    return rows.map(rowToWebsite);
+  },
+  findFavorites() {
+    const db2 = getDatabase();
+    const rows = db2.prepare("SELECT * FROM websites WHERE is_favorite = 1 ORDER BY updated_at DESC").all();
+    return rows.map(rowToWebsite);
+  },
+  create(data) {
+    const db2 = getDatabase();
+    const stmt = db2.prepare(`
+      INSERT INTO websites (name, url, username, email, password, notes, tags, is_favorite)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+    const result = stmt.run(
+      data.name,
+      data.url,
+      encryptField$1(data.username),
+      encryptField$1(data.network_name),
+      encryptField$1(data.password),
+      data.notes ?? null,
+      JSON.stringify(data.tags ?? []),
+      data.is_favorite ? 1 : 0
+    );
+    return this.findById(result.lastInsertRowid);
+  },
+  update(data) {
+    const db2 = getDatabase();
+    const existing = db2.prepare("SELECT * FROM websites WHERE id = ?").get(data.id);
+    if (!existing) throw new Error(`Website with id ${data.id} not found`);
+    const stmt = db2.prepare(`
+      UPDATE websites SET
+        name = ?,
+        url = ?,
+        username = ?,
+        email = ?,
+        password = ?,
+        notes = ?,
+        tags = ?,
+        is_favorite = ?
+      WHERE id = ?
+    `);
+    stmt.run(
+      data.name ?? existing.name,
+      data.url ?? existing.url,
+      data.username !== void 0 ? encryptField$1(data.username) : existing.username,
+      data.network_name !== void 0 ? encryptField$1(data.network_name) : existing.email,
+      data.password !== void 0 ? encryptField$1(data.password) : existing.password,
+      data.notes !== void 0 ? data.notes : existing.notes,
+      data.tags !== void 0 ? JSON.stringify(data.tags) : existing.tags,
+      data.is_favorite !== void 0 ? data.is_favorite ? 1 : 0 : existing.is_favorite,
+      data.id
+    );
+    return this.findById(data.id);
+  },
+  toggleFavorite(id) {
+    const db2 = getDatabase();
+    db2.prepare(
+      "UPDATE websites SET is_favorite = CASE WHEN is_favorite = 1 THEN 0 ELSE 1 END WHERE id = ?"
+    ).run(id);
+    return this.findById(id);
+  },
+  delete(id) {
+    const db2 = getDatabase();
+    const result = db2.prepare("DELETE FROM websites WHERE id = ?").run(id);
+    return result.changes > 0;
+  },
+  count() {
+    const db2 = getDatabase();
+    const row = db2.prepare("SELECT COUNT(*) as count FROM websites").get();
+    return row.count;
+  },
+  getRecent(limit = 5) {
+    const db2 = getDatabase();
+    const rows = db2.prepare("SELECT * FROM websites ORDER BY created_at DESC LIMIT ?").all(limit);
+    return rows.map(rowToWebsite);
+  }
+};
 function normalizeIcon(icon) {
   if (icon === void 0) return void 0;
   const trimmed = (icon == null ? void 0 : icon.trim()) ?? "";
@@ -757,33 +760,6 @@ const LinkRepository = {
     return rows.map(rowToLink);
   }
 };
-function registerLinkHandlers() {
-  handle("links:getAll", () => LinkRepository.findAll());
-  handle(
-    "links:getById",
-    (id) => LinkRepository.findById(id)
-  );
-  handle(
-    "links:search",
-    (query) => LinkRepository.search(query)
-  );
-  handle(
-    "links:create",
-    (data) => LinkRepository.create(data)
-  );
-  handle(
-    "links:update",
-    (data) => LinkRepository.update(data)
-  );
-  handle(
-    "links:delete",
-    (id) => LinkRepository.delete(id)
-  );
-  handle(
-    "links:toggleFavorite",
-    (id) => LinkRepository.toggleFavorite(id)
-  );
-}
 function rowToNote(row) {
   return {
     id: row.id,
@@ -889,33 +865,6 @@ const NoteRepository = {
     return rows.map(rowToNote);
   }
 };
-function registerNoteHandlers() {
-  handle("notes:getAll", () => NoteRepository.findAll());
-  handle(
-    "notes:getById",
-    (id) => NoteRepository.findById(id)
-  );
-  handle(
-    "notes:search",
-    (query) => NoteRepository.search(query)
-  );
-  handle(
-    "notes:create",
-    (data) => NoteRepository.create(data)
-  );
-  handle(
-    "notes:update",
-    (data) => NoteRepository.update(data)
-  );
-  handle(
-    "notes:delete",
-    (id) => NoteRepository.delete(id)
-  );
-  handle(
-    "notes:togglePin",
-    (id) => NoteRepository.togglePin(id)
-  );
-}
 function rowToTask(row) {
   return {
     id: row.id,
@@ -1042,31 +991,241 @@ const TaskRepository = {
     return rows.map(rowToTask);
   }
 };
-function registerTaskHandlers() {
-  handle("tasks:getAll", () => TaskRepository.findAll());
+function registerDashboardHandlers() {
+  handle("dashboard:getStats", () => {
+    return {
+      totalWebsites: WebsiteRepository.count(),
+      totalApplications: ApplicationRepository.count(),
+      totalLinks: LinkRepository.count(),
+      totalNotes: NoteRepository.count(),
+      totalTasks: TaskRepository.count(),
+      pendingTasks: TaskRepository.countPending(),
+      recentWebsites: WebsiteRepository.getRecent(5),
+      recentApplications: ApplicationRepository.getRecent(5),
+      recentNotes: NoteRepository.getRecent(5),
+      recentLinks: LinkRepository.getRecent(5),
+      favoritesWebsites: WebsiteRepository.findFavorites(),
+      favoritesLinks: LinkRepository.findFavorites()
+    };
+  });
+}
+function encryptField(value) {
+  if (value === void 0 || value === null) return null;
+  if (value === "") return "";
+  return EncryptionService.encrypt(value);
+}
+function decryptField(value) {
+  if (!value) return null;
+  return EncryptionService.decrypt(value);
+}
+function rowToConnection(row) {
+  return {
+    id: row.id,
+    name: row.name,
+    type: row.type,
+    user_schema: decryptField(row.user_schema) ?? row.user_schema,
+    password: decryptField(row.password),
+    host: row.host,
+    port: row.port,
+    service_name: row.service_name,
+    tns_alias: row.tns_alias,
+    notes: row.notes,
+    is_favorite: row.is_favorite,
+    created_at: row.created_at,
+    updated_at: row.updated_at
+  };
+}
+const DbConnectionRepository = {
+  findAll() {
+    const db2 = getDatabase();
+    const rows = db2.prepare("SELECT * FROM db_connections ORDER BY is_favorite DESC, updated_at DESC").all();
+    return rows.map(rowToConnection);
+  },
+  findById(id) {
+    const db2 = getDatabase();
+    const row = db2.prepare("SELECT * FROM db_connections WHERE id = ?").get(id);
+    if (!row) return null;
+    return rowToConnection(row);
+  },
+  search(query) {
+    const db2 = getDatabase();
+    const like = `%${query}%`;
+    const rows = db2.prepare(
+      `SELECT * FROM db_connections
+         WHERE name LIKE ? OR user_schema LIKE ? OR host LIKE ? OR service_name LIKE ?
+         ORDER BY is_favorite DESC, updated_at DESC`
+    ).all(like, like, like, like);
+    return rows.map(rowToConnection);
+  },
+  create(data) {
+    const db2 = getDatabase();
+    const result = db2.prepare(
+      `INSERT INTO db_connections
+          (name, type, user_schema, password, host, port, service_name, tns_alias, notes, is_favorite)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    ).run(
+      data.name,
+      data.type ?? "direct",
+      encryptField(data.user_schema) ?? data.user_schema,
+      encryptField(data.password),
+      data.host ?? null,
+      data.port ?? null,
+      data.service_name ?? null,
+      data.tns_alias ?? null,
+      data.notes ?? null,
+      data.is_favorite ? 1 : 0
+    );
+    return this.findById(result.lastInsertRowid);
+  },
+  update(data) {
+    const db2 = getDatabase();
+    const existing = db2.prepare("SELECT * FROM db_connections WHERE id = ?").get(data.id);
+    if (!existing) throw new Error(`DbConnection with id ${data.id} not found`);
+    db2.prepare(
+      `UPDATE db_connections SET
+        name = ?, type = ?, user_schema = ?, password = ?,
+        host = ?, port = ?, service_name = ?, tns_alias = ?, notes = ?, is_favorite = ?
+       WHERE id = ?`
+    ).run(
+      data.name ?? existing.name,
+      data.type ?? existing.type,
+      data.user_schema !== void 0 ? encryptField(data.user_schema) : existing.user_schema,
+      data.password !== void 0 ? encryptField(data.password) : existing.password,
+      data.host !== void 0 ? data.host : existing.host,
+      data.port !== void 0 ? data.port : existing.port,
+      data.service_name !== void 0 ? data.service_name : existing.service_name,
+      data.tns_alias !== void 0 ? data.tns_alias : existing.tns_alias,
+      data.notes !== void 0 ? data.notes : existing.notes,
+      data.is_favorite !== void 0 ? data.is_favorite ? 1 : 0 : existing.is_favorite,
+      data.id
+    );
+    return this.findById(data.id);
+  },
+  toggleFavorite(id) {
+    const db2 = getDatabase();
+    db2.prepare(
+      "UPDATE db_connections SET is_favorite = CASE WHEN is_favorite = 1 THEN 0 ELSE 1 END WHERE id = ?"
+    ).run(id);
+    return this.findById(id);
+  },
+  delete(id) {
+    const db2 = getDatabase();
+    const result = db2.prepare("DELETE FROM db_connections WHERE id = ?").run(id);
+    return result.changes > 0;
+  },
+  count() {
+    const db2 = getDatabase();
+    const row = db2.prepare("SELECT COUNT(*) as count FROM db_connections").get();
+    return row.count;
+  }
+};
+function ensureTable() {
+  const db2 = getDatabase();
+  db2.exec(`
+    CREATE TABLE IF NOT EXISTS db_connections (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      type TEXT NOT NULL DEFAULT 'direct',
+      user_schema TEXT NOT NULL,
+      password TEXT,
+      host TEXT,
+      port INTEGER,
+      service_name TEXT,
+      tns_alias TEXT,
+      notes TEXT,
+      is_favorite INTEGER DEFAULT 0,
+      created_at TEXT DEFAULT (datetime('now')),
+      updated_at TEXT DEFAULT (datetime('now'))
+    )
+  `);
+  db2.exec(`
+    CREATE TRIGGER IF NOT EXISTS update_db_connections_updated_at
+    AFTER UPDATE ON db_connections
+    BEGIN
+      UPDATE db_connections SET updated_at = datetime('now') WHERE id = NEW.id;
+    END
+  `);
+}
+function registerDbConnectionHandlers() {
+  ensureTable();
+  handle("dbconnections:getAll", () => DbConnectionRepository.findAll());
   handle(
-    "tasks:getById",
-    (id) => TaskRepository.findById(id)
+    "dbconnections:getById",
+    (id) => DbConnectionRepository.findById(id)
   );
   handle(
-    "tasks:search",
-    (query) => TaskRepository.search(query)
+    "dbconnections:search",
+    (query) => DbConnectionRepository.search(query)
   );
   handle(
-    "tasks:create",
-    (data) => TaskRepository.create(data)
+    "dbconnections:create",
+    (data) => DbConnectionRepository.create(data)
   );
   handle(
-    "tasks:update",
-    (data) => TaskRepository.update(data)
+    "dbconnections:update",
+    (data) => DbConnectionRepository.update(data)
   );
   handle(
-    "tasks:delete",
-    (id) => TaskRepository.delete(id)
+    "dbconnections:delete",
+    (id) => DbConnectionRepository.delete(id)
   );
   handle(
-    "tasks:updateStatus",
-    (id, status) => TaskRepository.updateStatus(id, status)
+    "dbconnections:toggleFavorite",
+    (id) => DbConnectionRepository.toggleFavorite(id)
+  );
+}
+function registerLinkHandlers() {
+  handle("links:getAll", () => LinkRepository.findAll());
+  handle(
+    "links:getById",
+    (id) => LinkRepository.findById(id)
+  );
+  handle(
+    "links:search",
+    (query) => LinkRepository.search(query)
+  );
+  handle(
+    "links:create",
+    (data) => LinkRepository.create(data)
+  );
+  handle(
+    "links:update",
+    (data) => LinkRepository.update(data)
+  );
+  handle(
+    "links:delete",
+    (id) => LinkRepository.delete(id)
+  );
+  handle(
+    "links:toggleFavorite",
+    (id) => LinkRepository.toggleFavorite(id)
+  );
+}
+function registerNoteHandlers() {
+  handle("notes:getAll", () => NoteRepository.findAll());
+  handle(
+    "notes:getById",
+    (id) => NoteRepository.findById(id)
+  );
+  handle(
+    "notes:search",
+    (query) => NoteRepository.search(query)
+  );
+  handle(
+    "notes:create",
+    (data) => NoteRepository.create(data)
+  );
+  handle(
+    "notes:update",
+    (data) => NoteRepository.update(data)
+  );
+  handle(
+    "notes:delete",
+    (id) => NoteRepository.delete(id)
+  );
+  handle(
+    "notes:togglePin",
+    (id) => NoteRepository.togglePin(id)
   );
 }
 const ExportService = {
@@ -1311,23 +1470,32 @@ function registerSettingsHandlers() {
     (sourcePath) => BackupService.importFromJSON(sourcePath)
   );
 }
-function registerDashboardHandlers() {
-  handle("dashboard:getStats", () => {
-    return {
-      totalWebsites: WebsiteRepository.count(),
-      totalApplications: ApplicationRepository.count(),
-      totalLinks: LinkRepository.count(),
-      totalNotes: NoteRepository.count(),
-      totalTasks: TaskRepository.count(),
-      pendingTasks: TaskRepository.countPending(),
-      recentWebsites: WebsiteRepository.getRecent(5),
-      recentApplications: ApplicationRepository.getRecent(5),
-      recentNotes: NoteRepository.getRecent(5),
-      recentLinks: LinkRepository.getRecent(5),
-      favoritesWebsites: WebsiteRepository.findFavorites(),
-      favoritesLinks: LinkRepository.findFavorites()
-    };
-  });
+function registerTaskHandlers() {
+  handle("tasks:getAll", () => TaskRepository.findAll());
+  handle(
+    "tasks:getById",
+    (id) => TaskRepository.findById(id)
+  );
+  handle(
+    "tasks:search",
+    (query) => TaskRepository.search(query)
+  );
+  handle(
+    "tasks:create",
+    (data) => TaskRepository.create(data)
+  );
+  handle(
+    "tasks:update",
+    (data) => TaskRepository.update(data)
+  );
+  handle(
+    "tasks:delete",
+    (id) => TaskRepository.delete(id)
+  );
+  handle(
+    "tasks:updateStatus",
+    (id, status) => TaskRepository.updateStatus(id, status)
+  );
 }
 function registerUtilityHandlers() {
   handle("utility:openExternal", async (url) => {
@@ -1358,169 +1526,31 @@ function registerUtilityHandlers() {
   });
   handle("utility:generateUUID", () => EncryptionService.generateUUID());
 }
-function encryptField(value) {
-  if (value === void 0 || value === null) return null;
-  if (value === "") return "";
-  return EncryptionService.encrypt(value);
-}
-function decryptField(value) {
-  if (!value) return null;
-  return EncryptionService.decrypt(value);
-}
-function rowToConnection(row) {
-  return {
-    id: row.id,
-    name: row.name,
-    type: row.type,
-    user_schema: decryptField(row.user_schema) ?? row.user_schema,
-    password: decryptField(row.password),
-    host: row.host,
-    port: row.port,
-    service_name: row.service_name,
-    tns_alias: row.tns_alias,
-    notes: row.notes,
-    is_favorite: row.is_favorite,
-    created_at: row.created_at,
-    updated_at: row.updated_at
-  };
-}
-const DbConnectionRepository = {
-  findAll() {
-    const db2 = getDatabase();
-    const rows = db2.prepare("SELECT * FROM db_connections ORDER BY is_favorite DESC, updated_at DESC").all();
-    return rows.map(rowToConnection);
-  },
-  findById(id) {
-    const db2 = getDatabase();
-    const row = db2.prepare("SELECT * FROM db_connections WHERE id = ?").get(id);
-    if (!row) return null;
-    return rowToConnection(row);
-  },
-  search(query) {
-    const db2 = getDatabase();
-    const like = `%${query}%`;
-    const rows = db2.prepare(
-      `SELECT * FROM db_connections
-         WHERE name LIKE ? OR user_schema LIKE ? OR host LIKE ? OR service_name LIKE ?
-         ORDER BY is_favorite DESC, updated_at DESC`
-    ).all(like, like, like, like);
-    return rows.map(rowToConnection);
-  },
-  create(data) {
-    const db2 = getDatabase();
-    const result = db2.prepare(
-      `INSERT INTO db_connections
-          (name, type, user_schema, password, host, port, service_name, tns_alias, notes, is_favorite)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-    ).run(
-      data.name,
-      data.type ?? "direct",
-      encryptField(data.user_schema) ?? data.user_schema,
-      encryptField(data.password),
-      data.host ?? null,
-      data.port ?? null,
-      data.service_name ?? null,
-      data.tns_alias ?? null,
-      data.notes ?? null,
-      data.is_favorite ? 1 : 0
-    );
-    return this.findById(result.lastInsertRowid);
-  },
-  update(data) {
-    const db2 = getDatabase();
-    const existing = db2.prepare("SELECT * FROM db_connections WHERE id = ?").get(data.id);
-    if (!existing) throw new Error(`DbConnection with id ${data.id} not found`);
-    db2.prepare(
-      `UPDATE db_connections SET
-        name = ?, type = ?, user_schema = ?, password = ?,
-        host = ?, port = ?, service_name = ?, tns_alias = ?, notes = ?, is_favorite = ?
-       WHERE id = ?`
-    ).run(
-      data.name ?? existing.name,
-      data.type ?? existing.type,
-      data.user_schema !== void 0 ? encryptField(data.user_schema) : existing.user_schema,
-      data.password !== void 0 ? encryptField(data.password) : existing.password,
-      data.host !== void 0 ? data.host : existing.host,
-      data.port !== void 0 ? data.port : existing.port,
-      data.service_name !== void 0 ? data.service_name : existing.service_name,
-      data.tns_alias !== void 0 ? data.tns_alias : existing.tns_alias,
-      data.notes !== void 0 ? data.notes : existing.notes,
-      data.is_favorite !== void 0 ? data.is_favorite ? 1 : 0 : existing.is_favorite,
-      data.id
-    );
-    return this.findById(data.id);
-  },
-  toggleFavorite(id) {
-    const db2 = getDatabase();
-    db2.prepare(
-      "UPDATE db_connections SET is_favorite = CASE WHEN is_favorite = 1 THEN 0 ELSE 1 END WHERE id = ?"
-    ).run(id);
-    return this.findById(id);
-  },
-  delete(id) {
-    const db2 = getDatabase();
-    const result = db2.prepare("DELETE FROM db_connections WHERE id = ?").run(id);
-    return result.changes > 0;
-  },
-  count() {
-    const db2 = getDatabase();
-    const row = db2.prepare("SELECT COUNT(*) as count FROM db_connections").get();
-    return row.count;
-  }
-};
-function ensureTable() {
-  const db2 = getDatabase();
-  db2.exec(`
-    CREATE TABLE IF NOT EXISTS db_connections (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL,
-      type TEXT NOT NULL DEFAULT 'direct',
-      user_schema TEXT NOT NULL,
-      password TEXT,
-      host TEXT,
-      port INTEGER,
-      service_name TEXT,
-      tns_alias TEXT,
-      notes TEXT,
-      is_favorite INTEGER DEFAULT 0,
-      created_at TEXT DEFAULT (datetime('now')),
-      updated_at TEXT DEFAULT (datetime('now'))
-    )
-  `);
-  db2.exec(`
-    CREATE TRIGGER IF NOT EXISTS update_db_connections_updated_at
-    AFTER UPDATE ON db_connections
-    BEGIN
-      UPDATE db_connections SET updated_at = datetime('now') WHERE id = NEW.id;
-    END
-  `);
-}
-function registerDbConnectionHandlers() {
-  ensureTable();
-  handle("dbconnections:getAll", () => DbConnectionRepository.findAll());
+function registerWebsiteHandlers() {
+  handle("websites:getAll", () => WebsiteRepository.findAll());
   handle(
-    "dbconnections:getById",
-    (id) => DbConnectionRepository.findById(id)
+    "websites:getById",
+    (id) => WebsiteRepository.findById(id)
   );
   handle(
-    "dbconnections:search",
-    (query) => DbConnectionRepository.search(query)
+    "websites:search",
+    (query) => WebsiteRepository.search(query)
   );
   handle(
-    "dbconnections:create",
-    (data) => DbConnectionRepository.create(data)
+    "websites:create",
+    (data) => WebsiteRepository.create(data)
   );
   handle(
-    "dbconnections:update",
-    (data) => DbConnectionRepository.update(data)
+    "websites:update",
+    (data) => WebsiteRepository.update(data)
   );
   handle(
-    "dbconnections:delete",
-    (id) => DbConnectionRepository.delete(id)
+    "websites:delete",
+    (id) => WebsiteRepository.delete(id)
   );
   handle(
-    "dbconnections:toggleFavorite",
-    (id) => DbConnectionRepository.toggleFavorite(id)
+    "websites:toggleFavorite",
+    (id) => WebsiteRepository.toggleFavorite(id)
   );
 }
 const isDev = !electron.app.isPackaged;
@@ -1576,6 +1606,7 @@ function registerAllIPCHandlers() {
   registerDashboardHandlers();
   registerUtilityHandlers();
   registerDbConnectionHandlers();
+  registerAuthHandlers();
 }
 electron.app.whenReady().then(() => {
   try {

@@ -86,6 +86,12 @@ const api: ElectronAPI = {
   updateDbConnection: (data) => invoke('dbconnections:update', data),
   deleteDbConnection: (id) => invoke('dbconnections:delete', id),
   toggleDbConnectionFavorite: (id) => invoke('dbconnections:toggleFavorite', id),
+
+  // ── Auth ──────────────────────────────────────────────────────────────────
+  authHasPin: () => invoke<{ success: boolean; data: boolean }>('auth:hasPin').then((r) => r.data ?? false),
+  authVerifyPin: (pin) => invoke<{ success: boolean; data: boolean }>('auth:verifyPin', pin).then((r) => r.data === true),
+  authSetPin: (pin) => invoke<{ success: boolean; data: boolean }>('auth:setPin', pin).then((r) => r.data === true),
+  authRemovePin: () => invoke<{ success: boolean; data: boolean }>('auth:removePin').then((r) => r.data === true),
 };
 
 // Expose only `electronAPI` — nothing else from Node/Electron world

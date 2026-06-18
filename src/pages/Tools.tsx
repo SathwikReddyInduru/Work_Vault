@@ -1,11 +1,14 @@
 // src/pages/Tools.tsx
 import { PageWrapper } from '@/components/layout/PageWrapper';
 import { Base64Tool } from '@/components/tools/Base64Tool';
+import { ColorPicker } from '@/components/tools/ColorPicker';
+import { DiffChecker } from '@/components/tools/DiffChecker';
+import { JwtDecoder } from '@/components/tools/JwtDecoder';
 import { JsonFormatter } from '@/components/tools/JsonFormatter';
 import { PasswordGenerator } from '@/components/tools/PasswordGenerator';
 import { UuidGenerator } from '@/components/tools/UuidGenerator';
 import { clsx } from 'clsx';
-import { Binary, Braces, Hash, ShieldCheck, Wrench } from 'lucide-react';
+import { Binary, Braces, GitCompare, Hash, KeyRound, Palette, ShieldCheck, Wrench } from 'lucide-react';
 import React, { useState } from 'react';
 
 interface Tool {
@@ -44,6 +47,27 @@ const TOOLS: Tool[] = [
     icon: <Binary size={16} />,
     description: 'Encode and decode Base64',
     component: <Base64Tool />,
+  },
+  {
+    id: 'diff',
+    label: 'Diff Checker',
+    icon: <GitCompare size={16} />,
+    description: 'Compare two blocks of text',
+    component: <DiffChecker />,
+  },
+  {
+    id: 'color',
+    label: 'Color Picker',
+    icon: <Palette size={16} />,
+    description: 'Pick, convert & explore colors',
+    component: <ColorPicker />,
+  },
+  {
+    id: 'jwt',
+    label: 'JWT Decoder',
+    icon: <KeyRound size={16} />,
+    description: 'Decode & inspect JWT tokens',
+    component: <JwtDecoder />,
   },
 ];
 

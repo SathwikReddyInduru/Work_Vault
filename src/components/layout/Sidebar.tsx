@@ -1,21 +1,23 @@
-import React from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+import { useUIStore } from '@/store/ui.store';
+import { clsx } from 'clsx';
 import {
-  LayoutDashboard,
-  Globe,
   AppWindow,
-  FileText,
-  Link2,
   CheckSquare,
-  Wrench,
-  Settings,
-  Shield,
   ChevronLeft,
   ChevronRight,
   Database,
+  FileText,
+  Globe,
+  LayoutDashboard,
+  Link2,
+  Lock,
+  Settings,
+  Shield,
+  Wrench,
 } from 'lucide-react';
-import { clsx } from 'clsx';
-import { useUIStore } from '@/store/ui.store';
+import React from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
 
 const navItems = [
   { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
@@ -65,6 +67,7 @@ const SidebarNavItem: React.FC<NavItemProps> = ({ path, icon: Icon, label, colla
 
 export const Sidebar: React.FC = () => {
   const { sidebarCollapsed, toggleSidebar } = useUIStore();
+  const { hasPin, lock } = useAuth();
 
   return (
     <aside
@@ -75,7 +78,7 @@ export const Sidebar: React.FC = () => {
     >
       {/* Logo */}
       <div className={clsx(
-        'flex items-center gap-3 px-4 h-20 border-b border-slate-800',
+        'flex items-center gap-3 px-4 h-16 border-b border-slate-800',
         sidebarCollapsed && 'justify-center px-2'
       )}>
         <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -110,6 +113,22 @@ export const Sidebar: React.FC = () => {
             collapsed={sidebarCollapsed}
           />
         ))}
+
+        {/* Lock button — only shown if a PIN is set */}
+        {hasPin && (
+          <button
+            onClick={lock}
+            title={sidebarCollapsed ? 'Lock WorkVault' : undefined}
+            className={clsx(
+              'sidebar-item sidebar-item-inactive text-amber-500/70 hover:text-amber-400 hover:bg-amber-500/10',
+              sidebarCollapsed && 'justify-center px-2'
+            )}
+          >
+            <Lock size={18} className="flex-shrink-0" />
+            {!sidebarCollapsed && <span className="truncate">Lock</span>}
+          </button>
+        )}
+
         {/* Collapse toggle */}
         <button
           onClick={toggleSidebar}

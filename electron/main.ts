@@ -1,19 +1,20 @@
 // electron/main.ts
 // Electron main process — entry point for WorkVault
 
-import { app, BrowserWindow, shell, ipcMain } from 'electron';
+import { app, BrowserWindow, shell } from 'electron';
 import path from 'path';
-import { initializeDatabase, closeDatabase } from '../src/database/connection';
+import { closeDatabase, initializeDatabase } from '../src/database/connection';
 import { runMigrations } from '../src/database/migrations';
-import { registerWebsiteHandlers } from './ipc/websites.ipc';
 import { registerApplicationHandlers } from './ipc/applications.ipc';
+import { registerAuthHandlers } from './ipc/auth.ipc';
+import { registerDashboardHandlers } from './ipc/dashboard.ipc';
+import { registerDbConnectionHandlers } from './ipc/dbconnections.ipc';
 import { registerLinkHandlers } from './ipc/links.ipc';
 import { registerNoteHandlers } from './ipc/notes.ipc';
-import { registerTaskHandlers } from './ipc/tasks.ipc';
 import { registerSettingsHandlers } from './ipc/settings.ipc';
-import { registerDashboardHandlers } from './ipc/dashboard.ipc';
+import { registerTaskHandlers } from './ipc/tasks.ipc';
 import { registerUtilityHandlers } from './ipc/utility.ipc';
-import { registerDbConnectionHandlers } from './ipc/dbconnections.ipc';
+import { registerWebsiteHandlers } from './ipc/websites.ipc';
 
 const isDev = !app.isPackaged;
 
@@ -75,6 +76,7 @@ function registerAllIPCHandlers(): void {
   registerDashboardHandlers();
   registerUtilityHandlers();
   registerDbConnectionHandlers();
+  registerAuthHandlers();
 }
 
 // ── App lifecycle ─────────────────────────────────────────────────────────────

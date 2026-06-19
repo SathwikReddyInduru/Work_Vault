@@ -2,14 +2,14 @@
 import type { DashboardStats } from '@/types/electron.types';
 import { extractHostname, formatRelativeTime, truncate } from '@/utils/formatters';
 import { clsx } from 'clsx';
-import { AppWindow, ArrowRight, Clock, FileText, Globe, Link2 } from 'lucide-react';
+import { AppWindow, ArrowRight, Clock, Database, FileText, Globe, Link2 } from 'lucide-react';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
 interface RecentItemsProps { stats: DashboardStats; }
 
 type RecentItem = {
-  kind: 'website' | 'application' | 'note' | 'link';
+  kind: 'website' | 'application' | 'note' | 'link' | 'dbconnection';
   id: number; title: string; subtitle: string; time: string;
 };
 
@@ -18,6 +18,7 @@ const kindMeta = {
   application: { icon: AppWindow,  color: 'text-purple-400',  bg: 'bg-purple-500/10',  route: '/applications' },
   note:        { icon: FileText,   color: 'text-emerald-400', bg: 'bg-emerald-500/10', route: '/notes'        },
   link:        { icon: Link2,      color: 'text-cyan-400',    bg: 'bg-cyan-500/10',    route: '/links'        },
+  dbconnection:{ icon: Database,   color: 'text-orange-400',  bg: 'bg-orange-500/10',  route: '/db-connections' },
 };
 
 export const RecentItems: React.FC<RecentItemsProps> = ({ stats }) => {
@@ -29,6 +30,7 @@ export const RecentItems: React.FC<RecentItemsProps> = ({ stats }) => {
     ...stats.recentApplications.map((a) => ({ kind: 'application' as const, id: a.id, title: a.name, subtitle: a.environment, time: a.created_at })),
     ...stats.recentNotes.map((n) => ({ kind: 'note' as const, id: n.id, title: n.title, subtitle: n.category, time: n.created_at })),
     ...stats.recentLinks.map((l) => ({ kind: 'link' as const, id: l.id, title: l.title, subtitle: l.category, time: l.created_at })),
+    ...stats.recentDbConnections.map((d) => ({ kind: 'dbconnection' as const, id: d.id, title: d.name, subtitle: d.host ?? d.service_name ?? d.type, time: d.created_at })),
   ].sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()).slice(0, 4);
 
   return (

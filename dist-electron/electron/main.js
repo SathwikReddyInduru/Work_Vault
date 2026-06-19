@@ -991,24 +991,6 @@ const TaskRepository = {
     return rows.map(rowToTask);
   }
 };
-function registerDashboardHandlers() {
-  handle("dashboard:getStats", () => {
-    return {
-      totalWebsites: WebsiteRepository.count(),
-      totalApplications: ApplicationRepository.count(),
-      totalLinks: LinkRepository.count(),
-      totalNotes: NoteRepository.count(),
-      totalTasks: TaskRepository.count(),
-      pendingTasks: TaskRepository.countPending(),
-      recentWebsites: WebsiteRepository.getRecent(5),
-      recentApplications: ApplicationRepository.getRecent(5),
-      recentNotes: NoteRepository.getRecent(5),
-      recentLinks: LinkRepository.getRecent(5),
-      favoritesWebsites: WebsiteRepository.findFavorites(),
-      favoritesLinks: LinkRepository.findFavorites()
-    };
-  });
-}
 function encryptField(value) {
   if (value === void 0 || value === null) return null;
   if (value === "") return "";
@@ -1117,8 +1099,33 @@ const DbConnectionRepository = {
     const db2 = getDatabase();
     const row = db2.prepare("SELECT COUNT(*) as count FROM db_connections").get();
     return row.count;
+  },
+  getRecent(limit = 5) {
+    const db2 = getDatabase();
+    const rows = db2.prepare("SELECT * FROM db_connections ORDER BY created_at DESC LIMIT ?").all(limit);
+    return rows.map(rowToConnection);
   }
 };
+function registerDashboardHandlers() {
+  handle("dashboard:getStats", () => {
+    return {
+      totalWebsites: WebsiteRepository.count(),
+      totalApplications: ApplicationRepository.count(),
+      totalLinks: LinkRepository.count(),
+      totalNotes: NoteRepository.count(),
+      totalTasks: TaskRepository.count(),
+      pendingTasks: TaskRepository.countPending(),
+      totalDbConnections: DbConnectionRepository.count(),
+      recentWebsites: WebsiteRepository.getRecent(5),
+      recentApplications: ApplicationRepository.getRecent(5),
+      recentNotes: NoteRepository.getRecent(5),
+      recentLinks: LinkRepository.getRecent(5),
+      recentDbConnections: DbConnectionRepository.getRecent(5),
+      favoritesWebsites: WebsiteRepository.findFavorites(),
+      favoritesLinks: LinkRepository.findFavorites()
+    };
+  });
+}
 function ensureTable() {
   const db2 = getDatabase();
   db2.exec(`

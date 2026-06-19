@@ -6,6 +6,7 @@ import { ApplicationRepository } from '../../src/database/repositories/applicati
 import { LinkRepository } from '../../src/database/repositories/link.repository';
 import { NoteRepository } from '../../src/database/repositories/note.repository';
 import { TaskRepository } from '../../src/database/repositories/task.repository';
+import { DbConnectionRepository } from '../../src/database/repositories/dbconnection.repository';
 import type { DashboardStats } from '../../src/types/electron.types';
 
 export function registerDashboardHandlers(): void {
@@ -17,10 +18,12 @@ export function registerDashboardHandlers(): void {
       totalNotes: NoteRepository.count(),
       totalTasks: TaskRepository.count(),
       pendingTasks: TaskRepository.countPending(),
+      totalDbConnections: DbConnectionRepository.count(),
       recentWebsites: WebsiteRepository.getRecent(5),
       recentApplications: ApplicationRepository.getRecent(5),
       recentNotes: NoteRepository.getRecent(5),
       recentLinks: LinkRepository.getRecent(5),
+      recentDbConnections: DbConnectionRepository.getRecent(5),
       favoritesWebsites: WebsiteRepository.findFavorites(),
       favoritesLinks: LinkRepository.findFavorites(),
     };

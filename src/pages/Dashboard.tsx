@@ -21,16 +21,15 @@ import { useNavigate } from 'react-router-dom';
 
 const MOCK_STATS: DashboardStats = {
   totalWebsites: 0, totalApplications: 0, totalLinks: 0,
-  totalNotes: 0, totalTasks: 0, pendingTasks: 0,
+  totalNotes: 0, totalTasks: 0, pendingTasks: 0, totalDbConnections: 0,
   recentWebsites: [], recentApplications: [], recentNotes: [],
-  recentLinks: [], favoritesWebsites: [], favoritesLinks: [],
+  recentLinks: [], recentDbConnections: [], favoritesWebsites: [], favoritesLinks: [],
 };
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [dbConnCount, setDbConnCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [lastRefresh, setLastRefresh] = useState(new Date());
@@ -40,14 +39,12 @@ const Dashboard: React.FC = () => {
     else setLoading(true);
     try {
       if (window.electronAPI) {
-        const [statsRes, tasksRes, dbConnRes] = await Promise.all([
+        const [statsRes, tasksRes] = await Promise.all([
           window.electronAPI.getDashboardStats(),
           window.electronAPI.getTasks(),
-          window.electronAPI.getDbConnections(),
         ]);
         setStats(statsRes.success && statsRes.data ? statsRes.data : MOCK_STATS);
         if (tasksRes.success && tasksRes.data) setTasks(tasksRes.data);
-        if (dbConnRes.success && dbConnRes.data) setDbConnCount(dbConnRes.data.length);
       } else {
         setStats(MOCK_STATS);
       }
@@ -69,7 +66,7 @@ const Dashboard: React.FC = () => {
   const statCards = [
     { label: 'Websites',       value: s.totalWebsites,     icon: Globe,       color: 'blue'   as const, route: '/websites'       },
     { label: 'Applications',   value: s.totalApplications, icon: AppWindow,   color: 'purple' as const, route: '/applications'   },
-    { label: 'DB Connections', value: dbConnCount,          icon: Database,    color: 'cyan'   as const, route: '/db-connections' },
+    { label: 'DB Connections', value: s.totalDbConnections, icon: Database,    color: 'cyan'   as const, route: '/db-connections' },
     { label: 'Notes',          value: s.totalNotes,         icon: FileText,    color: 'green'  as const, route: '/notes'          },
     { label: 'Total Tasks',    value: s.totalTasks,         icon: CheckSquare, color: 'yellow' as const, route: '/tasks'          },
     { label: 'Pending Tasks',  value: s.pendingTasks,       icon: TrendingUp,  color: 'red'    as const, route: '/tasks'          },

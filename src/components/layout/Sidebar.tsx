@@ -1,4 +1,5 @@
 import { useAuth } from '@/contexts/AuthContext';
+import { useNotificationsStore } from '@/store/notifications.store';
 import { useUIStore } from '@/store/ui.store';
 import { clsx } from 'clsx';
 import {
@@ -40,9 +41,10 @@ interface NavItemProps {
   label: string;
   collapsed: boolean;
   exact?: boolean;
+  hasDot?: boolean;
 }
 
-const SidebarNavItem: React.FC<NavItemProps> = ({ path, icon: Icon, label, collapsed, exact }) => {
+const SidebarNavItem: React.FC<NavItemProps> = ({ path, icon: Icon, label, collapsed, exact, hasDot }) => {
   const location = useLocation();
   const isActive = exact ? location.pathname === path : location.pathname.startsWith(path);
 
@@ -56,7 +58,12 @@ const SidebarNavItem: React.FC<NavItemProps> = ({ path, icon: Icon, label, colla
         collapsed && 'justify-center px-2'
       )}
     >
-      <Icon size={18} className="flex-shrink-0" />
+      <span className="relative flex-shrink-0">
+        <Icon size={18} />
+        {hasDot && (
+          <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-slate-900" />
+        )}
+      </span>
       {!collapsed && <span className="truncate">{label}</span>}
       {isActive && !collapsed && (
         <span className="ml-auto w-1.5 h-1.5 bg-blue-300 rounded-full flex-shrink-0" />
@@ -68,6 +75,7 @@ const SidebarNavItem: React.FC<NavItemProps> = ({ path, icon: Icon, label, colla
 export const Sidebar: React.FC = () => {
   const { sidebarCollapsed, toggleSidebar } = useUIStore();
   const { hasPin, lock } = useAuth();
+  const hasNotificationForRoute = useNotificationsStore((s) => s.hasNotificationForRoute);
 
   return (
     <aside
@@ -100,6 +108,7 @@ export const Sidebar: React.FC = () => {
             {...item}
             exact={item.path === '/'}
             collapsed={sidebarCollapsed}
+            hasDot={hasNotificationForRoute(item.path)}
           />
         ))}
       </nav>
@@ -111,6 +120,7 @@ export const Sidebar: React.FC = () => {
             key={item.path}
             {...item}
             collapsed={sidebarCollapsed}
+            hasDot={hasNotificationForRoute(item.path)}
           />
         ))}
 

@@ -1,8 +1,9 @@
 // src/components/layout/TopBar.tsx
 import { useAuth } from '@/contexts/AuthContext';
 import { useSearchStore } from '@/store/search.store';
+import { useNotificationsStore } from '@/store/notifications.store';
 import { clsx } from 'clsx';
-import { Lock, Search, Settings, ShieldCheck, ShieldOff } from 'lucide-react';
+import { Lock, Search, Settings, ShieldCheck, ShieldOff, Bell } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -31,6 +32,30 @@ export const TopBar: React.FC = () => {
   const menuRef = useRef<HTMLDivElement>(null);
   const [menuPos, setMenuPos] = useState({ top: 0, right: 0 });
 
+  const [notifOpen, setNotifOpen] = useState(false);
+  const notifBtnRef = useRef<HTMLButtonElement>(null);
+  const notifMenuRef = useRef<HTMLDivElement>(null);
+  const [notifPos, setNotifPos] = useState({ top: 0, right: 0 });
+
+  const notifications = useNotificationsStore((s) => s.notifications);
+  const hasNotifications = notifications.length > 0;
+
+  const openNotifMenu = () => {
+    if (notifBtnRef.current) {
+      const rect = notifBtnRef.current.getBoundingClientRect();
+      setNotifPos({
+        top: rect.bottom + 8,
+        right: window.innerWidth - rect.right,
+      });
+    }
+    setNotifOpen((o) => !o);
+  };
+
+  const goToNotification = (route: string) => {
+    setNotifOpen(false);
+    navigate(route);
+  };
+
   // Position the portal dropdown under the avatar button
   const openMenu = () => {
     if (btnRef.current) {
@@ -53,10 +78,16 @@ export const TopBar: React.FC = () => {
       ) {
         setMenuOpen(false);
       }
+      if (
+        notifMenuRef.current && !notifMenuRef.current.contains(target) &&
+        notifBtnRef.current && !notifBtnRef.current.contains(target)
+      ) {
+        setNotifOpen(false);
+      }
     };
-    if (menuOpen) document.addEventListener('mousedown', handler);
+    if (menuOpen || notifOpen) document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
-  }, [menuOpen]);
+  }, [menuOpen, notifOpen]);
 
   const handleLock = () => {
     setMenuOpen(false);
@@ -84,6 +115,21 @@ export const TopBar: React.FC = () => {
       </div>
 
       <div className="ml-auto flex items-center gap-2">
+        <button
+          ref={notifBtnRef}
+          onClick={openNotifMenu}
+          className={clsx(
+            'relative w-7 h-7 flex items-center justify-center rounded-full text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-all',
+            notifOpen && 'bg-slate-800 text-slate-200'
+          )}
+          title="Notifications"
+        >
+          <Bell size={15} />
+          {hasNotifications && (
+            <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full ring-2 ring-slate-900" />
+          )}
+        </button>
+
         <button
           ref={btnRef}
           onClick={openMenu}
@@ -138,6 +184,43 @@ export const TopBar: React.FC = () => {
               </button>
             )}
           </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Notification dropdown — renders at document.body level */}
+      {notifOpen && createPortal(
+        <div
+          ref={notifMenuRef}
+          style={{ position: 'fixed', top: notifPos.top, right: notifPos.right, zIndex: 9999 }}
+          className="w-64 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl py-1 overflow-hidden"
+        >
+          <div className="px-3 py-2.5 border-b border-slate-700">
+            <p className="text-xs font-semibold text-slate-200">Notifications</p>
+          </div>
+
+          {hasNotifications ? (
+            <div className="max-h-72 overflow-y-auto py-1">
+              {notifications.map((n) => {
+                const dotColor = n.severity === 'critical' ? 'bg-red-500' : n.severity === 'warning' ? 'bg-amber-500' : 'bg-blue-400';
+                return (
+                  <button
+                    key={n.id}
+                    onClick={() => goToNotification(n.route)}
+                    className="w-full flex items-start gap-2.5 px-3 py-3 text-left hover:bg-slate-700/60 transition-colors"
+                  >
+                    <span className={clsx('w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0', dotColor)} />
+                    <span className="min-w-0">
+                      <p className="text-xs font-medium text-slate-200">{n.title}</p>
+                      <p className="text-[11px] text-slate-500 mt-0.5">{n.description}</p>
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="px-3 py-4 text-xs text-slate-500 text-center">You're all caught up.</p>
+          )}
         </div>,
         document.body
       )}

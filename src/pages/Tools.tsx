@@ -28,6 +28,27 @@ const TOOLS: Tool[] = [
     component: <JsonFormatter />,
   },
   {
+    id: 'diff',
+    label: 'Diff Checker',
+    icon: <GitCompare size={16} />,
+    description: 'Compare two blocks of text',
+    component: <DiffChecker />,
+  },
+  {
+    id: 'jwt',
+    label: 'JWT Decoder',
+    icon: <KeyRound size={16} />,
+    description: 'Decode & inspect JWT tokens',
+    component: <JwtDecoder />,
+  },
+  {
+    id: 'color',
+    label: 'Color Picker',
+    icon: <Palette size={16} />,
+    description: 'Pick, convert & explore colors',
+    component: <ColorPicker />,
+  },
+  {
     id: 'password',
     label: 'Password Generator',
     icon: <ShieldCheck size={16} />,
@@ -47,27 +68,6 @@ const TOOLS: Tool[] = [
     icon: <Binary size={16} />,
     description: 'Encode and decode Base64',
     component: <Base64Tool />,
-  },
-  {
-    id: 'diff',
-    label: 'Diff Checker',
-    icon: <GitCompare size={16} />,
-    description: 'Compare two blocks of text',
-    component: <DiffChecker />,
-  },
-  {
-    id: 'color',
-    label: 'Color Picker',
-    icon: <Palette size={16} />,
-    description: 'Pick, convert & explore colors',
-    component: <ColorPicker />,
-  },
-  {
-    id: 'jwt',
-    label: 'JWT Decoder',
-    icon: <KeyRound size={16} />,
-    description: 'Decode & inspect JWT tokens',
-    component: <JwtDecoder />,
   },
 ];
 

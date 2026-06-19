@@ -1,12 +1,13 @@
+// src/hooks/useTasks.ts
 import { useState, useEffect, useCallback } from 'react';
-import type { Task, CreateTaskInput, UpdateTaskInput, TaskStatus } from '@/types/task.types';
+import type { CreateTaskInput, UpdateTaskInput, TaskStatus } from '@/types/task.types';
+import { useTasksStore } from '@/store/tasks.store';
 import { useToast } from './useToast';
 
 const api = () => (window as any).electronAPI;
 
 export const useTasks = () => {
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [loading, setLoading] = useState(false);
+  const { tasks, loading, setTasks, setLoading } = useTasksStore();
   const toast = useToast();
 
   const load = useCallback(async () => {
@@ -15,7 +16,7 @@ export const useTasks = () => {
       const res = await api().getTasks();
       if (res.success) setTasks(res.data ?? []);
     } catch { } finally { setLoading(false); }
-  }, []);
+  }, [setTasks, setLoading]);
 
   useEffect(() => { load(); }, [load]);
 

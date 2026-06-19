@@ -23,10 +23,12 @@ export interface DashboardStats {
   totalNotes: number;
   totalTasks: number;
   pendingTasks: number;
+  totalDbConnections: number;
   recentWebsites: Website[];
   recentApplications: Application[];
   recentNotes: Note[];
   recentLinks: QuickLink[];
+  recentDbConnections: DbConnection[];
   favoritesWebsites: Website[];
   favoritesLinks: QuickLink[];
 }

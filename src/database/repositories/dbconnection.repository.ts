@@ -152,4 +152,12 @@ export const DbConnectionRepository = {
       .get() as { count: number };
     return row.count;
   },
+
+  getRecent(limit = 5): DbConnection[] {
+    const db = getDatabase();
+    const rows = db
+      .prepare('SELECT * FROM db_connections ORDER BY created_at DESC LIMIT ?')
+      .all(limit) as DbConnectionRow[];
+    return rows.map(rowToConnection);
+  },
 };

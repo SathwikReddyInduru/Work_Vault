@@ -76,9 +76,9 @@ const WebsiteTableRow: React.FC<RowProps> = ({
   // keeps focus during the entire copy sequence.
   const openUrl = async () => {
     const credentials = [
-      website.network_name ? { value: website.network_name, label: 'Network name copied' } : null,
-      website.username     ? { value: website.username,     label: 'Username copied' }      : null,
       website.password     ? { value: website.password,     label: 'Password copied' }      : null,
+      website.username     ? { value: website.username,     label: 'Username copied' }      : null,
+      website.network_name ? { value: website.network_name, label: 'Network name copied' } : null,
     ].filter(Boolean) as { value: string; label: string }[];
 
     if (credentials.length > 0) {

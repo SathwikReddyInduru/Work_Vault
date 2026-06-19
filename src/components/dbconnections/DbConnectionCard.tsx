@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { clsx } from 'clsx';
-import { Database, Eye, EyeOff, Copy, Check, Star, Pencil, Trash2, Server, Hash } from 'lucide-react';
+import { Database, Eye, EyeOff, Copy, Check, Star, Pencil, Trash2, Server, Hash, Layers } from 'lucide-react';
 import type { DbConnection } from '@/types/dbconnection.types';
 import { useClipboard } from '@/hooks/useClipboard';
 
@@ -22,15 +22,28 @@ const TYPE_BADGE: Record<string, { label: string; color: string }> = {
 export const DbConnectionCard: React.FC<DbConnectionCardProps> = ({
   connection, onEdit, onDelete, onToggleFavorite,
 }) => {
-  const { copy } = useClipboard();
+  const { copy, copySequential } = useClipboard();
   const [showPwd, setShowPwd] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
+  const [copyingAll, setCopyingAll] = useState(false);
 
   const handleCopy = async (value: string | null, field: string) => {
     if (!value) return;
     await copy(value);
     setCopied(field);
     setTimeout(() => setCopied(null), 1500);
+  };
+
+  const handleCopyAll = async () => {
+    const fields = [
+      connection.service_name ? { value: connection.service_name, label: 'Service copied' } : null,
+      connection.host         ? { value: connection.host,         label: 'Host copied' }    : null,
+      connection.user_schema  ? { value: connection.user_schema,  label: 'Username copied' } : null,
+    ].filter(Boolean) as { value: string; label: string }[];
+    if (fields.length === 0) return;
+    setCopyingAll(true);
+    await copySequential(fields, 1000);
+    setCopyingAll(false);
   };
 
   const badge = TYPE_BADGE[connection.type] ?? TYPE_BADGE.direct;
@@ -66,6 +79,14 @@ export const DbConnectionCard: React.FC<DbConnectionCardProps> = ({
         </div>
         {/* Actions */}
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+          <button
+            onClick={handleCopyAll}
+            disabled={copyingAll}
+            className="p-1.5 rounded-lg transition-colors hover:bg-slate-700 text-slate-500 hover:text-slate-300 disabled:opacity-50"
+            title="Copy service, host & username"
+          >
+            <Layers size={13} />
+          </button>
           <button
             onClick={() => onToggleFavorite(connection.id)}
             className={clsx('p-1.5 rounded-lg transition-colors hover:bg-slate-700',
@@ -113,23 +134,38 @@ export const DbConnectionCard: React.FC<DbConnectionCardProps> = ({
           </div>
         )}
 
-        {/* Host + Port */}
-        {(connection.host || connection.port) && (
-          <div className="flex items-center gap-2 bg-slate-900/50 rounded-lg px-3 py-2">
-            <Server size={11} className="text-slate-500 flex-shrink-0" />
-            <span className="font-mono text-slate-300 truncate">
-              {[connection.host, connection.port].filter(Boolean).join(':')}
-            </span>
-            <CopyBtn value={[connection.host, connection.port].filter(Boolean).join(':')} field="host" />
+        {/* Host */}
+        {connection.host && (
+          <div className="flex items-center justify-between bg-slate-900/50 rounded-lg px-3 py-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <Server size={11} className="text-slate-500 flex-shrink-0" />
+              <span className="text-slate-500 flex-shrink-0">Host</span>
+              <span className="font-mono text-slate-300 truncate">{connection.host}</span>
+            </div>
+            <CopyBtn value={connection.host} field="host" />
+          </div>
+        )}
+
+        {/* Port */}
+        {connection.port && (
+          <div className="flex items-center justify-between bg-slate-900/50 rounded-lg px-3 py-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <Hash size={11} className="text-slate-500 flex-shrink-0" />
+              <span className="text-slate-500 flex-shrink-0">Port</span>
+              <span className="font-mono text-slate-300 truncate">{connection.port}</span>
+            </div>
+            <CopyBtn value={String(connection.port)} field="port" />
           </div>
         )}
 
         {/* Service Name */}
         {connection.service_name && (
-          <div className="flex items-center gap-2 bg-slate-900/50 rounded-lg px-3 py-2">
-            <Hash size={11} className="text-slate-500 flex-shrink-0" />
-            <span className="text-slate-500 flex-shrink-0">Service</span>
-            <span className="font-mono text-slate-300 truncate">{connection.service_name}</span>
+          <div className="flex items-center justify-between bg-slate-900/50 rounded-lg px-3 py-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <Hash size={11} className="text-slate-500 flex-shrink-0" />
+              <span className="text-slate-500 flex-shrink-0">Service</span>
+              <span className="font-mono text-slate-300 truncate">{connection.service_name}</span>
+            </div>
             <CopyBtn value={connection.service_name} field="service" />
           </div>
         )}

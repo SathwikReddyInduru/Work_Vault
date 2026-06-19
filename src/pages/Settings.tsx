@@ -119,8 +119,8 @@ const PinRow: React.FC<{
 const emptyPin = () => Array(PIN_LENGTH).fill('');
 
 // ── Change PIN Modal ──────────────────────────────────────────────────────────
-const ChangePinModal: React.FC<{ open: boolean; onClose: () => void; isSettingNew: boolean; onSuccess: () => void }> = ({
-  open, onClose, isSettingNew, onSuccess,
+const ChangePinModal: React.FC<{ open: boolean; onClose: () => void; isSettingNew: boolean; onSuccess: () => void; onPinSet?: (pin: string) => Promise<void> }> = ({
+  open, onClose, isSettingNew, onSuccess, onPinSet,
 }) => {
   const [currentPin, setCurrentPin] = useState<string[]>(emptyPin());
   const [newPin, setNewPin] = useState<string[]>(emptyPin());
@@ -179,7 +179,11 @@ const ChangePinModal: React.FC<{ open: boolean; onClose: () => void; isSettingNe
     }
 
     setLoading(true);
-    await api().authSetPin(newFull);
+    if (onPinSet) {
+      await onPinSet(newFull);
+    } else {
+      await api().authSetPin(newFull);
+    }
     setLoading(false);
     reset();
     onSuccess();
@@ -565,6 +569,7 @@ const Settings: React.FC = () => {
 
       {/* ── Change/Set PIN Modal ─────────────────────────────────────────────── */}
       <ChangePinModal
+        onPinSet={setPin}
         open={pinModalOpen}
         onClose={() => setPinModalOpen(false)}
         isSettingNew={!hasPin}

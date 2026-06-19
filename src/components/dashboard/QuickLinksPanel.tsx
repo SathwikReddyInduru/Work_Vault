@@ -53,10 +53,10 @@ export const QuickLinksPanel: React.FC = () => {
         </div>
         <button
           onClick={() => setFormOpen(true)}
-          className="w-6 h-6 rounded-md bg-slate-700/60 hover:bg-slate-700 flex items-center justify-center transition-colors"
+          className="flex items-center gap-1 text-[10px] font-medium text-slate-400 hover:text-slate-200 bg-slate-700/50 hover:bg-slate-700 border border-slate-600/50 px-2 py-1 rounded-lg transition-colors"
           title="Add quick link"
         >
-          <Plus size={12} className="text-slate-400" />
+          <Plus size={12} className="text-slate-400" /> New Link
         </button>
       </div>
 
@@ -66,7 +66,7 @@ export const QuickLinksPanel: React.FC = () => {
           <p className="text-xs text-slate-600 text-center">No quick links yet.</p>
           <button
             onClick={() => setFormOpen(true)}
-            className="flex items-center gap-1.5 text-xs text-blue-400 hover:text-blue-300 transition-colors"
+            className="flex items-center gap-1.5 text-xs text-blue-400 hover:text-blue-300 underline underline-offset-2 transition-colors"
           >
             <Plus size={12} /> Add your first link
           </button>

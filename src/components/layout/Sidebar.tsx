@@ -75,7 +75,9 @@ const SidebarNavItem: React.FC<NavItemProps> = ({ path, icon: Icon, label, colla
 export const Sidebar: React.FC = () => {
   const { sidebarCollapsed, toggleSidebar } = useUIStore();
   const { hasPin, lock } = useAuth();
-  const hasNotificationForRoute = useNotificationsStore((s) => s.hasNotificationForRoute);
+  const notifications = useNotificationsStore((s) => s.notifications);
+  const hasNotificationForRoute = (route: string) =>
+    notifications.some((n) => n.route === route || (route !== '/' && n.route.startsWith(route)));
 
   return (
     <aside

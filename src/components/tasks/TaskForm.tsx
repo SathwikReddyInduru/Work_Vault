@@ -5,9 +5,18 @@ import { Modal } from '@/components/ui/Modal';
 import type { Task, TaskStatus } from '@/types/task.types';
 import { TASK_PRIORITIES, TASK_STATUSES } from '@/utils/constants';
 import { taskSchema, type TaskFormValues } from '@/utils/validators';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { zodResolver } from '@hookform/resolvers/zod'
 import React from 'react';
 import { useForm } from 'react-hook-form';
+
+// Returns today's date as YYYY-MM-DD in local time
+function todayISO(): string {
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm   = String(d.getMonth() + 1).padStart(2, '0');
+  const dd   = String(d.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+}
 
 interface TaskFormProps {
   open: boolean;
@@ -34,22 +43,23 @@ export const TaskForm: React.FC<TaskFormProps> = ({
   } = useForm<TaskFormValues>({
     resolver: zodResolver(taskSchema),
     defaultValues: {
-      name: initial?.name ?? '',
+      name:        initial?.name ?? '',
       description: initial?.description ?? '',
-      priority: initial?.priority ?? 'medium',
-      due_date: initial?.due_date?.slice(0, 10) ?? '',
-      status: initial?.status ?? defaultStatus,
+      priority:    initial?.priority ?? 'medium',
+      // New tasks default to today; edits keep their existing date
+      due_date:    initial?.due_date?.slice(0, 10) ?? todayISO(),
+      status:      initial?.status ?? defaultStatus,
     },
   });
 
-  // Sync form values when initial changes
+  // Sync form values when initial changes (also runs on open for new tasks)
   React.useEffect(() => {
     reset({
-      name: initial?.name ?? '',
+      name:        initial?.name ?? '',
       description: initial?.description ?? '',
-      priority: initial?.priority ?? 'medium',
-      due_date: initial?.due_date?.slice(0, 10) ?? '',
-      status: initial?.status ?? defaultStatus,
+      priority:    initial?.priority ?? 'medium',
+      due_date:    initial?.due_date?.slice(0, 10) ?? todayISO(),
+      status:      initial?.status ?? defaultStatus,
     });
   }, [initial, defaultStatus, reset]);
 
@@ -58,9 +68,8 @@ export const TaskForm: React.FC<TaskFormProps> = ({
     if (ok) { reset(); onClose(); }
   };
 
-  const labelClass = 'block text-xs font-medium text-slate-400 mb-1.5';
-  const selectClass =
-    'w-full bg-slate-700/60 border border-slate-600 text-slate-200 text-sm rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500 transition-colors';
+  const labelClass  = 'block text-xs font-medium text-slate-400 mb-1.5';
+  const selectClass = 'w-full bg-slate-700/60 border border-slate-600 text-slate-200 text-sm rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-violet-500/50 focus:border-violet-500 transition-colors';
 
   return (
     <Modal
@@ -120,9 +129,14 @@ export const TaskForm: React.FC<TaskFormProps> = ({
           </div>
         </div>
 
-        {/* Due date */}
+        {/* Due date — defaults to today for new tasks */}
         <div>
-          <label className={labelClass}>Due date</label>
+          <label className={labelClass}>
+            Due date
+            {!isEdit && (
+              <span className="ml-1.5 text-slate-600 font-normal">(defaults to today)</span>
+            )}
+          </label>
           <input
             type="date"
             {...register('due_date')}

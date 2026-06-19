@@ -31,7 +31,7 @@ export const RecentItems: React.FC<RecentItemsProps> = ({ stats }) => {
     ...stats.recentNotes.map((n) => ({ kind: 'note' as const, id: n.id, title: n.title, subtitle: n.category, time: n.created_at })),
     ...stats.recentLinks.map((l) => ({ kind: 'link' as const, id: l.id, title: l.title, subtitle: l.category, time: l.created_at })),
     ...stats.recentDbConnections.map((d) => ({ kind: 'dbconnection' as const, id: d.id, title: d.name, subtitle: d.host ?? d.service_name ?? d.type, time: d.created_at })),
-  ].sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()).slice(0, 4);
+  ].sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()).slice(0, 3);
 
   return (
     <div className="rounded-2xl border border-slate-700/60 bg-slate-800/50 p-5 flex flex-col h-full min-h-0">

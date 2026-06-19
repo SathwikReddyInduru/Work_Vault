@@ -1,31 +1,16 @@
 // src/components/layout/TopBar.tsx
 import { useAuth } from '@/contexts/AuthContext';
-import { useSearchStore } from '@/store/search.store';
 import { useNotificationsStore } from '@/store/notifications.store';
 import { clsx } from 'clsx';
-import { Lock, Search, Settings, ShieldCheck, ShieldOff, Bell } from 'lucide-react';
+import { Lock, Settings, ShieldCheck, ShieldOff, Bell, X } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { useLocation, useNavigate } from 'react-router-dom';
-
-const pageTitles: Record<string, string> = {
-  '/': 'Dashboard',
-  '/websites': 'Website Credentials',
-  '/applications': 'Application Credentials',
-  '/db-connections': 'DB Connections',
-  '/notes': 'Notes Vault',
-  '/links': 'Quick Links',
-  '/tasks': 'Task Manager',
-  '/tools': 'Developer Tools',
-  '/settings': 'Settings',
-};
+import { useNavigate } from 'react-router-dom';
+import { GlobalSearch } from './GlobalSearch';
 
 export const TopBar: React.FC = () => {
-  const { globalQuery, setGlobalQuery } = useSearchStore();
-  const location = useLocation();
   const navigate = useNavigate();
   const { hasPin, lock } = useAuth();
-  const title = pageTitles[location.pathname] ?? 'WorkVault';
 
   const [menuOpen, setMenuOpen] = useState(false);
   const btnRef = useRef<HTMLButtonElement>(null);
@@ -39,6 +24,8 @@ export const TopBar: React.FC = () => {
 
   const notifications = useNotificationsStore((s) => s.notifications);
   const hasNotifications = notifications.length > 0;
+  const dismiss = useNotificationsStore((s) => s.dismiss);
+  const dismissAll = useNotificationsStore((s) => s.dismissAll);
 
   const openNotifMenu = () => {
     if (notifBtnRef.current) {
@@ -56,7 +43,6 @@ export const TopBar: React.FC = () => {
     navigate(route);
   };
 
-  // Position the portal dropdown under the avatar button
   const openMenu = () => {
     if (btnRef.current) {
       const rect = btnRef.current.getBoundingClientRect();
@@ -68,7 +54,6 @@ export const TopBar: React.FC = () => {
     setMenuOpen((o) => !o);
   };
 
-  // Close on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       const target = e.target as Node;
@@ -101,18 +86,8 @@ export const TopBar: React.FC = () => {
 
   return (
     <header className="h-16 bg-slate-900/80 border-b border-slate-800 flex items-center gap-4 px-5 flex-shrink-0 backdrop-blur-sm">
-      <h1 className="text-sm font-semibold text-slate-200 flex-shrink-0">{title}</h1>
 
-      <div className="flex-1 max-w-md relative flex items-center">
-        <Search size={14} className="absolute left-3 text-slate-500 pointer-events-none" />
-        <input
-          type="text"
-          value={globalQuery}
-          onChange={(e) => setGlobalQuery(e.target.value)}
-          placeholder="Global search..."
-          className="w-full bg-slate-800 border border-slate-700 rounded-lg pl-8 pr-3 py-1.5 text-sm text-slate-200 placeholder-slate-500 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-all"
-        />
-      </div>
+      <GlobalSearch />
 
       <div className="ml-auto flex items-center gap-2">
         <button
@@ -143,14 +118,12 @@ export const TopBar: React.FC = () => {
         </button>
       </div>
 
-      {/* Portal dropdown — renders at document.body level, above everything */}
       {menuOpen && createPortal(
         <div
           ref={menuRef}
           style={{ position: 'fixed', top: menuPos.top, right: menuPos.right, zIndex: 9999 }}
           className="w-52 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl py-1 overflow-hidden"
         >
-          {/* Header */}
           <div className="px-3 py-2.5 border-b border-slate-700">
             <p className="text-xs font-semibold text-slate-200">WorkVault</p>
             <div className="flex items-center gap-1.5 mt-0.5">
@@ -164,7 +137,6 @@ export const TopBar: React.FC = () => {
             </div>
           </div>
 
-          {/* Actions */}
           <div className="py-1">
             <button
               onClick={handleSettings}
@@ -188,15 +160,22 @@ export const TopBar: React.FC = () => {
         document.body
       )}
 
-      {/* Notification dropdown — renders at document.body level */}
       {notifOpen && createPortal(
         <div
           ref={notifMenuRef}
           style={{ position: 'fixed', top: notifPos.top, right: notifPos.right, zIndex: 9999 }}
           className="w-64 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl py-1 overflow-hidden"
         >
-          <div className="px-3 py-2.5 border-b border-slate-700">
+          <div className="px-3 py-2.5 border-b border-slate-700 flex items-center justify-between">
             <p className="text-xs font-semibold text-slate-200">Notifications</p>
+            {hasNotifications && (
+              <button
+                onClick={dismissAll}
+                className="text-[10px] text-slate-500 hover:text-slate-300 transition-colors"
+              >
+                Clear all
+              </button>
+            )}
           </div>
 
           {hasNotifications ? (
@@ -204,17 +183,25 @@ export const TopBar: React.FC = () => {
               {notifications.map((n) => {
                 const dotColor = n.severity === 'critical' ? 'bg-red-500' : n.severity === 'warning' ? 'bg-amber-500' : 'bg-blue-400';
                 return (
-                  <button
-                    key={n.id}
-                    onClick={() => goToNotification(n.route)}
-                    className="w-full flex items-start gap-2.5 px-3 py-3 text-left hover:bg-slate-700/60 transition-colors"
-                  >
-                    <span className={clsx('w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0', dotColor)} />
-                    <span className="min-w-0">
-                      <p className="text-xs font-medium text-slate-200">{n.title}</p>
-                      <p className="text-[11px] text-slate-500 mt-0.5">{n.description}</p>
-                    </span>
-                  </button>
+                  <div key={n.id} className="flex items-start hover:bg-slate-700/60 transition-colors group">
+                    <button
+                      onClick={() => goToNotification(n.route)}
+                      className="flex-1 flex items-start gap-2.5 px-3 py-3 text-left"
+                    >
+                      <span className={clsx('w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0', dotColor)} />
+                      <span className="min-w-0">
+                        <p className="text-xs font-medium text-slate-200">{n.title}</p>
+                        <p className="text-[11px] text-slate-500 mt-0.5">{n.description}</p>
+                      </span>
+                    </button>
+                    <button
+                      onClick={() => dismiss(n.id)}
+                      className="p-3 text-slate-600 hover:text-slate-300 opacity-0 group-hover:opacity-100 transition-all flex-shrink-0"
+                      title="Dismiss"
+                    >
+                      <X size={11} />
+                    </button>
+                  </div>
                 );
               })}
             </div>

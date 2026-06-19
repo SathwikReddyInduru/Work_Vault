@@ -4,39 +4,55 @@
 //   1. What shows in the bell dropdown (TopBar)
 //   2. Which sidebar items get a red dot (Sidebar)
 //
-// To add a new notification type in the future (weak passwords, untested
-// DB connections, expired certs, etc.) — add a `compute*` function below
-// and call it inside `refreshNotifications()`. Nothing in TopBar.tsx or
-// Sidebar.tsx needs to change.
+// Dismissed IDs are kept in a session-only Set (memory, no DB/localStorage).
+// refreshNotifications() always recomputes from live data but skips any ID
+// the user has dismissed. On app restart dismissed IDs reset — intentional,
+// since the user should re-evaluate unresolved tasks on a new session.
 
 import { create } from 'zustand';
 
 export type NotificationSeverity = 'critical' | 'warning' | 'info';
 
 export interface AppNotification {
-  id: string;            // stable, unique per notification instance
+  id: string;
   title: string;
   description: string;
-  route: string;         // which page this notification should navigate to
+  route: string;
   severity: NotificationSeverity;
-  createdAt: string;     // ISO timestamp, used for sorting
+  createdAt: string;
 }
 
 interface NotificationsState {
   notifications: AppNotification[];
+  dismissedIds: Set<string>;
   setNotifications: (notifications: AppNotification[]) => void;
   dismiss: (id: string) => void;
-  /** Does any notification target this exact route or a route nested under it? */
+  dismissAll: () => void;
   hasNotificationForRoute: (route: string) => boolean;
 }
 
 export const useNotificationsStore = create<NotificationsState>((set, get) => ({
   notifications: [],
+  dismissedIds: new Set(),
 
   setNotifications: (notifications) => set({ notifications }),
 
   dismiss: (id) =>
-    set((s) => ({ notifications: s.notifications.filter((n) => n.id !== id) })),
+    set((s) => {
+      const dismissedIds = new Set(s.dismissedIds);
+      dismissedIds.add(id);
+      return {
+        dismissedIds,
+        notifications: s.notifications.filter((n) => n.id !== id),
+      };
+    }),
+
+  dismissAll: () =>
+    set((s) => {
+      const dismissedIds = new Set(s.dismissedIds);
+      s.notifications.forEach((n) => dismissedIds.add(n.id));
+      return { dismissedIds, notifications: [] };
+    }),
 
   hasNotificationForRoute: (route) => {
     const { notifications } = get();
@@ -68,7 +84,7 @@ function computeAuthNotifications({ hasPin }: ComputeAuthNotificationsInput): Ap
 
 interface TaskLike {
   id: number;
-  name: string;          // ← fixed: was "title", Task type uses "name"
+  name: string;
   due_date: string | null;
   status: string;
 }
@@ -84,9 +100,6 @@ function computeTaskNotifications({ tasks }: ComputeTaskNotificationsInput): App
   for (const task of tasks) {
     if (!task.due_date || task.status === 'done') continue;
 
-    // Append T23:59:59 so a date-only string like "2026-06-19" is treated as
-    // end-of-day in local time, not midnight UTC (which would be 5:30 AM IST
-    // and look "overdue" the moment you open the app on the same day).
     const dueDateStr = task.due_date.length === 10
       ? `${task.due_date}T23:59:59`
       : task.due_date;
@@ -129,10 +142,12 @@ interface RefreshNotificationsInput {
 }
 
 export function refreshNotifications(input: RefreshNotificationsInput): void {
+  const { dismissedIds } = useNotificationsStore.getState();
+
   const all: AppNotification[] = [
     ...computeAuthNotifications({ hasPin: input.hasPin }),
     ...computeTaskNotifications({ tasks: input.tasks ?? [] }),
-  ];
+  ].filter((n) => !dismissedIds.has(n.id));  // ← skip dismissed
 
   const severityRank: Record<NotificationSeverity, number> = { critical: 0, warning: 1, info: 2 };
   all.sort((a, b) => severityRank[a.severity] - severityRank[b.severity]);

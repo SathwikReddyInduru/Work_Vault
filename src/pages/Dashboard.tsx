@@ -6,7 +6,6 @@ import { StatCard } from '@/components/dashboard/StatCard';
 import { TaskSummary } from '@/components/dashboard/TaskSummary';
 import { PageLoader } from '@/components/ui/Spinner';
 import type { DashboardStats } from '@/types/electron.types';
-import type { Task } from '@/types/task.types';
 import {
   AppWindow,
   CheckSquare,
@@ -29,7 +28,6 @@ const MOCK_STATS: DashboardStats = {
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [lastRefresh, setLastRefresh] = useState(new Date());
@@ -39,12 +37,10 @@ const Dashboard: React.FC = () => {
     else setLoading(true);
     try {
       if (window.electronAPI) {
-        const [statsRes, tasksRes] = await Promise.all([
+        const [statsRes] = await Promise.all([
           window.electronAPI.getDashboardStats(),
-          window.electronAPI.getTasks(),
         ]);
         setStats(statsRes.success && statsRes.data ? statsRes.data : MOCK_STATS);
-        if (tasksRes.success && tasksRes.data) setTasks(tasksRes.data);
       } else {
         setStats(MOCK_STATS);
       }
@@ -119,7 +115,7 @@ const Dashboard: React.FC = () => {
 
         {/* Row 3 — task summary, fixed height */}
         <div className="flex-shrink-0">
-          <TaskSummary tasks={tasks} pendingCount={s.pendingTasks} />
+          <TaskSummary />
         </div>
 
       </div>

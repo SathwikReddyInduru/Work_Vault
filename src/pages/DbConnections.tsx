@@ -1,9 +1,10 @@
 // src/pages/DbConnections.tsx
 
 import React, { useState, useMemo } from 'react';
-import { Database, Plus, Search } from 'lucide-react';
+import { Database, LayoutGrid, List, Plus, Search } from 'lucide-react';
 import { useDbConnections } from '@/hooks/useDbConnections';
 import { DbConnectionCard } from '@/components/dbconnections/DbConnectionCard';
+import { DbConnectionTable } from '@/components/dbconnections/DbConnectionTable';
 import { DbConnectionForm } from '@/components/dbconnections/DbConnectionForm';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -13,14 +14,17 @@ import { PageWrapper } from '@/components/layout/PageWrapper';
 import type { DbConnection } from '@/types/dbconnection.types';
 import type { DbConnectionFormValues } from '@/utils/validators';
 
+type ViewMode = 'grid' | 'table';
+
 const DbConnections: React.FC = () => {
   const { connections, loading, create, update, remove, toggleFavorite } = useDbConnections();
 
-  const [search, setSearch] = useState('');
-  const [formOpen, setFormOpen] = useState(false);
-  const [editTarget, setEditTarget] = useState<DbConnection | null>(null);
+  const [search, setSearch]           = useState('');
+  const [viewMode, setViewMode]       = useState<ViewMode>('grid');
+  const [formOpen, setFormOpen]       = useState(false);
+  const [editTarget, setEditTarget]   = useState<DbConnection | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<DbConnection | null>(null);
-  const [deleting, setDeleting] = useState(false);
+  const [deleting, setDeleting]       = useState(false);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -34,7 +38,7 @@ const DbConnections: React.FC = () => {
     );
   }, [connections, search]);
 
-  const openAdd = () => { setEditTarget(null); setFormOpen(true); };
+  const openAdd  = () => { setEditTarget(null); setFormOpen(true); };
   const openEdit = (c: DbConnection) => { setEditTarget(c); setFormOpen(true); };
 
   const handleSubmit = async (values: DbConnectionFormValues): Promise<boolean> => {
@@ -66,6 +70,33 @@ const DbConnections: React.FC = () => {
 
       <div className="flex items-center gap-2">
         <SearchBar value={search} onChange={setSearch} placeholder="Search by name, user, host, service…" className="w-64" />
+
+        {/* View toggle */}
+        <div className="flex items-center bg-slate-900 border border-slate-700 rounded-lg p-0.5">
+          <button
+            onClick={() => setViewMode('grid')}
+            className={
+              viewMode === 'grid'
+                ? 'p-1.5 rounded-md bg-slate-700 text-slate-100'
+                : 'p-1.5 rounded-md text-slate-500 hover:text-slate-200'
+            }
+            title="Grid view"
+          >
+            <LayoutGrid size={14} />
+          </button>
+          <button
+            onClick={() => setViewMode('table')}
+            className={
+              viewMode === 'table'
+                ? 'p-1.5 rounded-md bg-slate-700 text-slate-100'
+                : 'p-1.5 rounded-md text-slate-500 hover:text-slate-200'
+            }
+            title="Table view"
+          >
+            <List size={14} />
+          </button>
+        </div>
+
         <Button icon={<Plus size={15} />} size="sm" onClick={openAdd}>
           Add Connection
         </Button>
@@ -102,19 +133,28 @@ const DbConnections: React.FC = () => {
         />
       )}
 
-      {/* Grid */}
+      {/* Grid / Table */}
       {filtered.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-          {filtered.map((c) => (
-            <DbConnectionCard
-              key={c.id}
-              connection={c}
-              onEdit={openEdit}
-              onDelete={setDeleteTarget}
-              onToggleFavorite={toggleFavorite}
-            />
-          ))}
-        </div>
+        viewMode === 'grid' ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+            {filtered.map((c) => (
+              <DbConnectionCard
+                key={c.id}
+                connection={c}
+                onEdit={openEdit}
+                onDelete={setDeleteTarget}
+                onToggleFavorite={toggleFavorite}
+              />
+            ))}
+          </div>
+        ) : (
+          <DbConnectionTable
+            connections={filtered}
+            onEdit={openEdit}
+            onDelete={setDeleteTarget}
+            onToggleFavorite={toggleFavorite}
+          />
+        )
       )}
 
       {/* Form modal */}

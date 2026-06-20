@@ -8,6 +8,7 @@ export interface Application {
   url: string | null;
   username: string | null;
   password: string | null;
+  network_name: string | null;
   environment: AppEnvironment;
   notes: string | null;
   is_favorite: boolean;
@@ -20,6 +21,7 @@ export interface CreateApplicationInput {
   url?: string;
   username?: string;
   password?: string;
+  network_name?: string;
   environment?: AppEnvironment;
   notes?: string;
   is_favorite?: boolean;

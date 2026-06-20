@@ -31,6 +31,8 @@ export interface DashboardStats {
   recentDbConnections: DbConnection[];
   favoritesWebsites: Website[];
   favoritesLinks: QuickLink[];
+  favoritesApplications: Application[];
+  favoritesDbConnections: DbConnection[];
 }
 
 // Database info for settings page

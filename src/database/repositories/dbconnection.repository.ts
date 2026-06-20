@@ -160,4 +160,12 @@ export const DbConnectionRepository = {
       .all(limit) as DbConnectionRow[];
     return rows.map(rowToConnection);
   },
+
+  findFavorites(): DbConnection[] {
+    const db = getDatabase();
+    const rows = db
+      .prepare('SELECT * FROM db_connections WHERE is_favorite = 1 ORDER BY updated_at DESC')
+      .all() as DbConnectionRow[];
+    return rows.map(rowToConnection);
+  },
 };

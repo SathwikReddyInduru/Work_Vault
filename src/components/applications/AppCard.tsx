@@ -33,12 +33,23 @@ export const AppCard: React.FC<AppCardProps> = ({
   onToggleFavorite,
 }) => {
   const [showPassword, setShowPassword] = useState(false);
-  const { copy } = useClipboard();
+  const { copy, copySequential } = useClipboard();
 
   const hostname = extractHostname(application.url);
 
-  const openUrl = () => {
+  const openUrl = async () => {
     if (!application.url) return;
+
+    const credentials = [
+      application.password     ? { value: application.password,     label: 'Password copied' }      : null,
+      application.username     ? { value: application.username,     label: 'Username copied' }      : null,
+      application.network_name ? { value: application.network_name, label: 'Network name copied' } : null,
+    ].filter(Boolean) as { value: string; label: string }[];
+
+    if (credentials.length > 0) {
+      await copySequential(credentials, 1000);
+    }
+
     if (window.electronAPI) {
       window.electronAPI.openExternal(application.url);
     } else {
@@ -101,6 +112,20 @@ export const AppCard: React.FC<AppCardProps> = ({
             </button>
           </div>
         )}
+        {application.network_name && (
+          <div className="flex items-center justify-between gap-2 px-2.5 py-1.5 bg-slate-900/60 rounded-lg">
+            <span className="flex items-center gap-1.5 text-slate-400 min-w-0">
+              <span className="text-slate-500 flex-shrink-0 text-[10px] font-medium">NET</span>
+              <span className="truncate">{application.network_name}</span>
+            </span>
+            <button
+              onClick={() => copy(application.network_name!, 'Network name copied')}
+              className="flex-shrink-0 text-slate-500 hover:text-slate-200 transition-colors"
+            >
+              <Copy size={12} />
+            </button>
+          </div>
+        )}
         {application.password && (
           <div className="flex items-center justify-between gap-2 px-2.5 py-1.5 bg-slate-900/60 rounded-lg">
             <span className="text-slate-300 font-mono tracking-wide truncate">
@@ -122,7 +147,7 @@ export const AppCard: React.FC<AppCardProps> = ({
             </span>
           </div>
         )}
-        {!application.username && !application.password && (
+        {!application.username && !application.network_name && !application.password && (
           <p className="text-slate-600 italic px-2.5 py-1.5">No credentials saved</p>
         )}
       </div>

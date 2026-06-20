@@ -5,23 +5,24 @@ import { TaskForm } from '@/components/tasks/TaskForm';
 import { Button } from '@/components/ui/Button';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { Modal } from '@/components/ui/Modal';
 import { SearchBar } from '@/components/ui/SearchBar';
 import { useTasks } from '@/hooks/useTasks';
 import type { Task, TaskStatus } from '@/types/task.types';
 import type { TaskFormValues } from '@/utils/validators';
 import { clsx } from 'clsx';
-import { CheckSquare, Plus, Search } from 'lucide-react';
+import { CheckSquare, Plus, Search, SlidersHorizontal } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 
 // ── Date filter ───────────────────────────────────────────────────────────────
 
 type DateFilter = 'all' | 'today' | 'week' | 'overdue';
 
-const DATE_FILTERS: { value: DateFilter; label: string }[] = [
-  { value: 'all',     label: 'All' },
-  { value: 'today',   label: 'Today' },
-  { value: 'week',    label: 'This week' },
-  { value: 'overdue', label: 'Overdue' },
+const DATE_FILTERS: { value: DateFilter; label: string; desc: string }[] = [
+  { value: 'all',     label: 'All tasks',   desc: 'Show everything regardless of due date' },
+  { value: 'today',   label: 'Due today',   desc: 'Tasks due before end of today' },
+  { value: 'week',    label: 'This week',   desc: 'Tasks due within the next 7 days' },
+  { value: 'overdue', label: 'Overdue',     desc: 'Past-due tasks that aren\'t done' },
 ];
 
 function parseDue(due_date: string): number {
@@ -52,15 +53,16 @@ function applyDateFilter(tasks: Task[], filter: DateFilter): Task[] {
 const Tasks: React.FC = () => {
   const { tasks, loading, create, update, remove, updateStatus } = useTasks();
 
-  const [search, setSearch]               = useState('');
-  const [dateFilter, setDateFilter]       = useState<DateFilter>('all');
+  const [search, setSearch]           = useState('');
+  const [dateFilter, setDateFilter]   = useState<DateFilter>('all');
+  const [filterOpen, setFilterOpen]       = useState(false);
   const [formOpen, setFormOpen]           = useState(false);
   const [editTarget, setEditTarget]       = useState<Task | null>(null);
   const [defaultStatus, setDefaultStatus] = useState<TaskStatus>('todo');
   const [deleteTarget, setDeleteTarget]   = useState<Task | null>(null);
   const [deleting, setDeleting]           = useState(false);
 
-  // Badge counts — computed from full task list so they don't flicker as user types
+  // Badge counts — computed from full task list so they don't flicker
   const dateCounts = useMemo(() => ({
     today:   applyDateFilter(tasks, 'today').length,
     week:    applyDateFilter(tasks, 'week').length,
@@ -76,7 +78,7 @@ const Tasks: React.FC = () => {
         t.name.toLowerCase().includes(q) ||
         (t.description ?? '').toLowerCase().includes(q)
     );
-  }, [tasks, search, dateFilter]);
+  }, [tasks, dateFilter, search]);
 
   const openAdd = (status: TaskStatus = 'todo') => {
     setEditTarget(null);
@@ -107,8 +109,11 @@ const Tasks: React.FC = () => {
     setDeleteTarget(null);
   };
 
-  const showBoard      = loading || filtered.length > 0 || (dateFilter === 'all' && !search && tasks.length > 0);
-  const emptyFiltered  = !loading && tasks.length > 0 && filtered.length === 0 && (search || dateFilter !== 'all');
+  const showBoard     = loading || filtered.length > 0 || (dateFilter === 'all' && !search && tasks.length > 0);
+  const emptyFiltered = !loading && tasks.length > 0 && filtered.length === 0 && (dateFilter !== 'all' || !!search);
+  const isFiltered    = dateFilter !== 'all';
+
+  const activeFilter = DATE_FILTERS.find((f) => f.value === dateFilter)!;
 
   const header = (
     <div className="flex items-center justify-between gap-4 w-full">
@@ -125,59 +130,33 @@ const Tasks: React.FC = () => {
         </div>
       </div>
 
-      {/* Right — date filters + search + add */}
-      <div className="flex items-center gap-2 min-w-0">
-        {/* Date filter pills — only show when there are tasks */}
+      {/* Right — search + filter + add */}
+      <div className="flex items-center gap-2">
         {tasks.length > 0 && (
-          <div className="flex items-center gap-1 flex-shrink-0">
-            {/* Divider */}
-            <div className="w-px h-4 bg-slate-700 mr-1" />
-            {DATE_FILTERS.map(({ value, label }) => {
-              const count =
-                value === 'today'   ? dateCounts.today   :
-                value === 'week'    ? dateCounts.week     :
-                value === 'overdue' ? dateCounts.overdue  : null;
-              const active    = dateFilter === value;
-              const isOverdue = value === 'overdue';
-
-              return (
-                <button
-                  key={value}
-                  onClick={() => setDateFilter(value)}
-                  className={clsx(
-                    'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap',
-                    active
-                      ? isOverdue
-                        ? 'bg-red-500/20 text-red-300 ring-1 ring-red-500/40'
-                        : 'bg-amber-500/20 text-amber-300 ring-1 ring-amber-500/40'
-                      : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
-                  )}
-                >
-                  {label}
-                  {count !== null && count > 0 && (
-                    <span
-                      className={clsx(
-                        'text-[10px] font-semibold px-1.5 py-0.5 rounded-full leading-none',
-                        active
-                          ? isOverdue
-                            ? 'bg-red-500/30 text-red-200'
-                            : 'bg-amber-500/30 text-amber-200'
-                          : isOverdue
-                            ? 'bg-red-500/20 text-red-400'
-                            : 'bg-slate-700 text-slate-400'
-                      )}
-                    >
-                      {count}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-            <div className="w-px h-4 bg-slate-700 ml-1" />
-          </div>
+          <SearchBar
+            value={search}
+            onChange={setSearch}
+            placeholder="Search tasks…"
+            className="w-56"
+          />
         )}
-
-        <SearchBar value={search} onChange={setSearch} placeholder="Search tasks…" className="w-48" />
+        {tasks.length > 0 && (
+          <button
+            onClick={() => setFilterOpen(true)}
+            className={clsx(
+              'relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all border',
+              isFiltered
+                ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 hover:bg-amber-500/30'
+                : 'bg-slate-800 text-slate-400 border-slate-700 hover:text-slate-200 hover:bg-slate-700'
+            )}
+          >
+            <SlidersHorizontal size={13} />
+            Filter
+            {isFiltered && (
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 absolute -top-0.5 -right-0.5" />
+            )}
+          </button>
+        )}
         <Button icon={<Plus size={15} />} size="sm" onClick={() => openAdd('todo')}>
           Add Task
         </Button>
@@ -201,30 +180,21 @@ const Tasks: React.FC = () => {
         />
       )}
 
-      {/* Empty state — filter / search has no results */}
+      {/* Empty state — filter/search has no results */}
       {emptyFiltered && (
         <EmptyState
           icon={Search}
           title={
             search
-              ? `No tasks match "${search}"`
-              : dateFilter === 'overdue'
-              ? 'No overdue tasks'
-              : dateFilter === 'today'
-              ? 'Nothing due today'
-              : 'Nothing due this week'
+              ? 'No matching tasks'
+              : dateFilter === 'overdue' ? 'No overdue tasks'
+              : dateFilter === 'today'   ? 'Nothing due today'
+              :                            'Nothing due this week'
           }
-          description={
-            search
-              ? 'Try a different search term or clear the filter.'
-              : "Great — you're on top of things."
-          }
+          description={search ? `No tasks match "${search}".` : "Great — you're on top of things."}
           action={
-            <Button
-              variant="secondary"
-              onClick={() => { setSearch(''); setDateFilter('all'); }}
-            >
-              {search && dateFilter !== 'all' ? 'Clear search & filter' : search ? 'Clear search' : 'Show all tasks'}
+            <Button variant="secondary" onClick={() => { setSearch(''); setDateFilter('all'); }}>
+              Clear filters
             </Button>
           }
         />
@@ -243,6 +213,66 @@ const Tasks: React.FC = () => {
           />
         </div>
       )}
+
+      {/* Filter modal */}
+      <Modal
+        open={filterOpen}
+        onClose={() => setFilterOpen(false)}
+        title="Filter tasks"
+        size="sm"
+        footer={
+          isFiltered ? (
+            <Button
+              variant="secondary"
+              onClick={() => { setDateFilter('all'); setFilterOpen(false); }}
+            >
+              Clear filter
+            </Button>
+          ) : undefined
+        }
+      >
+        <div className="flex flex-col gap-2">
+          <p className="text-xs text-slate-500 mb-1">Show tasks by due date</p>
+          {DATE_FILTERS.map(({ value, label, desc }) => {
+            const count =
+              value === 'today'   ? dateCounts.today   :
+              value === 'week'    ? dateCounts.week     :
+              value === 'overdue' ? dateCounts.overdue  : null;
+            const active    = dateFilter === value;
+            const isOverdue = value === 'overdue';
+
+            return (
+              <button
+                key={value}
+                onClick={() => { setDateFilter(value); setFilterOpen(false); }}
+                className={clsx(
+                  'w-full flex items-center justify-between px-4 py-3 rounded-xl border text-left transition-all',
+                  active
+                    ? isOverdue
+                      ? 'bg-red-500/10 border-red-500/30 text-red-300'
+                      : 'bg-amber-500/10 border-amber-500/30 text-amber-300'
+                    : 'bg-slate-900/40 border-slate-700/50 text-slate-300 hover:bg-slate-700/40 hover:border-slate-600'
+                )}
+              >
+                <div className="min-w-0">
+                  <p className="text-sm font-medium">{label}</p>
+                  <p className={clsx('text-[11px] mt-0.5', active ? 'opacity-70' : 'text-slate-500')}>{desc}</p>
+                </div>
+                {count !== null && count > 0 && (
+                  <span className={clsx(
+                    'ml-3 flex-shrink-0 text-[11px] font-semibold px-2 py-0.5 rounded-full',
+                    active
+                      ? isOverdue ? 'bg-red-500/30 text-red-200' : 'bg-amber-500/30 text-amber-200'
+                      : isOverdue ? 'bg-red-500/15 text-red-400' : 'bg-slate-700 text-slate-400'
+                  )}>
+                    {count}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </Modal>
 
       {/* Form modal */}
       <TaskForm

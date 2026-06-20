@@ -26,6 +26,7 @@ const CREATE_APPLICATIONS_TABLE = `
     url TEXT,
     username TEXT,
     password TEXT,
+    network_name TEXT,
     environment TEXT DEFAULT 'production',
     notes TEXT,
     is_favorite INTEGER DEFAULT 0,
@@ -209,6 +210,14 @@ const migrations = [
       db2.exec(`ALTER TABLE links ADD COLUMN icon TEXT`);
       console.log("[Migration v3] icon column added to links");
     }
+  },
+  {
+    version: 4,
+    description: "Add network_name column to applications table",
+    up: (db2) => {
+      db2.exec(`ALTER TABLE applications ADD COLUMN network_name TEXT`);
+      console.log("[Migration v4] network_name column added to applications");
+    }
   }
 ];
 function runMigrations(db2) {
@@ -362,6 +371,7 @@ function rowToApplication(row) {
     url: row.url,
     username: decryptField$2(row.username),
     password: decryptField$2(row.password),
+    network_name: row.network_name,
     environment: row.environment,
     notes: row.notes,
     is_favorite: row.is_favorite === 1,
@@ -404,14 +414,15 @@ const ApplicationRepository = {
   create(data) {
     const db2 = getDatabase();
     const stmt = db2.prepare(`
-      INSERT INTO applications (name, url, username, password, environment, notes, is_favorite)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO applications (name, url, username, password, network_name, environment, notes, is_favorite)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `);
     const result = stmt.run(
       data.name,
       data.url ?? null,
       encryptField$2(data.username),
       encryptField$2(data.password),
+      data.network_name ?? null,
       data.environment ?? "production",
       data.notes ?? null,
       data.is_favorite ? 1 : 0
@@ -428,6 +439,7 @@ const ApplicationRepository = {
         url = ?,
         username = ?,
         password = ?,
+        network_name = ?,
         environment = ?,
         notes = ?,
         is_favorite = ?
@@ -438,6 +450,7 @@ const ApplicationRepository = {
       data.url !== void 0 ? data.url : existing.url,
       data.username !== void 0 ? encryptField$2(data.username) : existing.username,
       data.password !== void 0 ? encryptField$2(data.password) : existing.password,
+      data.network_name !== void 0 ? data.network_name : existing.network_name,
       data.environment ?? existing.environment,
       data.notes !== void 0 ? data.notes : existing.notes,
       data.is_favorite !== void 0 ? data.is_favorite ? 1 : 0 : existing.is_favorite,
@@ -1104,6 +1117,11 @@ const DbConnectionRepository = {
     const db2 = getDatabase();
     const rows = db2.prepare("SELECT * FROM db_connections ORDER BY created_at DESC LIMIT ?").all(limit);
     return rows.map(rowToConnection);
+  },
+  findFavorites() {
+    const db2 = getDatabase();
+    const rows = db2.prepare("SELECT * FROM db_connections WHERE is_favorite = 1 ORDER BY updated_at DESC").all();
+    return rows.map(rowToConnection);
   }
 };
 function registerDashboardHandlers() {
@@ -1122,7 +1140,9 @@ function registerDashboardHandlers() {
       recentLinks: LinkRepository.getRecent(5),
       recentDbConnections: DbConnectionRepository.getRecent(5),
       favoritesWebsites: WebsiteRepository.findFavorites(),
-      favoritesLinks: LinkRepository.findFavorites()
+      favoritesLinks: LinkRepository.findFavorites(),
+      favoritesApplications: ApplicationRepository.findFavorites(),
+      favoritesDbConnections: DbConnectionRepository.findFavorites()
     };
   });
 }

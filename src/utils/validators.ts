@@ -61,6 +61,7 @@ export const applicationSchema = z.object({
   url: optionalUrl,
   username: z.string().max(200).optional().or(z.literal('')),
   password: z.string().max(500).optional().or(z.literal('')),
+  network_name: z.string().max(200).optional().or(z.literal('')),
   environment: z
     .enum(['production', 'staging', 'development', 'testing', 'local'])
     .default('production'),

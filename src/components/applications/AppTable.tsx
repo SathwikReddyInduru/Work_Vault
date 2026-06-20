@@ -38,6 +38,7 @@ export const AppTable: React.FC<AppTableProps> = ({
             <th className="text-left font-medium text-slate-400 text-xs uppercase tracking-wide px-4 py-3">Name</th>
             <th className="text-left font-medium text-slate-400 text-xs uppercase tracking-wide px-4 py-3">Environment</th>
             <th className="text-left font-medium text-slate-400 text-xs uppercase tracking-wide px-4 py-3">Username</th>
+            <th className="text-left font-medium text-slate-400 text-xs uppercase tracking-wide px-4 py-3">Network Name</th>
             <th className="text-left font-medium text-slate-400 text-xs uppercase tracking-wide px-4 py-3">Password</th>
             <th className="text-left font-medium text-slate-400 text-xs uppercase tracking-wide px-4 py-3">Updated</th>
             <th className="text-right font-medium text-slate-400 text-xs uppercase tracking-wide px-4 py-3">Actions</th>
@@ -73,10 +74,21 @@ const AppTableRow: React.FC<RowProps> = ({
   onToggleFavorite,
 }) => {
   const [showPassword, setShowPassword] = useState(false);
-  const { copy } = useClipboard();
+  const { copy, copySequential } = useClipboard();
 
-  const openUrl = () => {
+  const openUrl = async () => {
     if (!application.url) return;
+
+    const credentials = [
+      application.password     ? { value: application.password,     label: 'Password copied' }      : null,
+      application.username     ? { value: application.username,     label: 'Username copied' }      : null,
+      application.network_name ? { value: application.network_name, label: 'Network name copied' } : null,
+    ].filter(Boolean) as { value: string; label: string }[];
+
+    if (credentials.length > 0) {
+      await copySequential(credentials, 1000);
+    }
+
     if (window.electronAPI) {
       window.electronAPI.openExternal(application.url);
     } else {
@@ -126,9 +138,39 @@ const AppTableRow: React.FC<RowProps> = ({
       </td>
 
       <td className="px-4 py-3">
-        <span className="text-xs text-slate-400 truncate max-w-[160px] block">
-          {application.username || <span className="text-slate-600 italic">—</span>}
-        </span>
+        {application.username ? (
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs text-slate-400 truncate max-w-[140px] block">
+              {application.username}
+            </span>
+            <button
+              onClick={() => copy(application.username!, 'Username copied')}
+              className="text-slate-500 hover:text-slate-200 transition-colors flex-shrink-0"
+            >
+              <Copy size={11} />
+            </button>
+          </div>
+        ) : (
+          <span className="text-slate-600 italic text-xs">—</span>
+        )}
+      </td>
+
+      <td className="px-4 py-3">
+        {application.network_name ? (
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs text-slate-400 truncate max-w-[140px] block">
+              {application.network_name}
+            </span>
+            <button
+              onClick={() => copy(application.network_name!, 'Network name copied')}
+              className="text-slate-500 hover:text-slate-200 transition-colors flex-shrink-0"
+            >
+              <Copy size={11} />
+            </button>
+          </div>
+        ) : (
+          <span className="text-slate-600 italic text-xs">—</span>
+        )}
       </td>
 
       <td className="px-4 py-3">

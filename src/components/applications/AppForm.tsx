@@ -23,6 +23,7 @@ const emptyDefaults: ApplicationFormValues = {
   url: '',
   username: '',
   password: '',
+  network_name: '',
   environment: 'production',
   notes: '',
   is_favorite: false,
@@ -35,6 +36,7 @@ const toDefaults = (application?: Application | null): ApplicationFormValues =>
         url: application.url ?? '',
         username: application.username ?? '',
         password: application.password ?? '',
+        network_name: application.network_name ?? '',
         environment: application.environment,
         notes: application.notes ?? '',
         is_favorite: application.is_favorite,
@@ -157,7 +159,13 @@ export const AppForm: React.FC<AppFormProps> = ({
           {...register('url')}
         />
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-3 gap-4">
+          <Input
+            label="Network Name"
+            placeholder="Optional"
+            error={errors.network_name?.message}
+            {...register('network_name')}
+          />
           <Input
             label="Username"
             placeholder="Optional"

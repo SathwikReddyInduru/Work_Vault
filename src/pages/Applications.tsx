@@ -21,6 +21,7 @@ const sanitize = (values: ApplicationFormValues) => ({
   url: values.url?.trim() || undefined,
   username: values.username?.trim() || undefined,
   password: values.password?.trim() || undefined,
+  network_name: values.network_name?.trim() || undefined,
   environment: values.environment,
   notes: values.notes?.trim() || undefined,
   is_favorite: values.is_favorite ?? false,

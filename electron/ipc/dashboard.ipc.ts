@@ -26,6 +26,8 @@ export function registerDashboardHandlers(): void {
       recentDbConnections: DbConnectionRepository.getRecent(5),
       favoritesWebsites: WebsiteRepository.findFavorites(),
       favoritesLinks: LinkRepository.findFavorites(),
+      favoritesApplications: ApplicationRepository.findFavorites(),
+      favoritesDbConnections: DbConnectionRepository.findFavorites(),
     };
   });
 }

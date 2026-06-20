@@ -24,6 +24,7 @@ export const CREATE_APPLICATIONS_TABLE = `
     url TEXT,
     username TEXT,
     password TEXT,
+    network_name TEXT,
     environment TEXT DEFAULT 'production',
     notes TEXT,
     is_favorite INTEGER DEFAULT 0,

@@ -56,6 +56,14 @@ const migrations: Migration[] = [
       console.log('[Migration v3] icon column added to links');
     },
   },
+  {
+    version: 4,
+    description: 'Add network_name column to applications table',
+    up: (db: Database.Database) => {
+      db.exec(`ALTER TABLE applications ADD COLUMN network_name TEXT`);
+      console.log('[Migration v4] network_name column added to applications');
+    },
+  },
 ];
 
 export function runMigrations(db: Database.Database): void {

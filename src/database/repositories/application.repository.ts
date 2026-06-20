@@ -10,6 +10,7 @@ export interface ApplicationRow {
   url: string | null;
   username: string | null;
   password: string | null;
+  network_name: string | null;
   environment: string;
   notes: string | null;
   is_favorite: number;
@@ -22,6 +23,7 @@ export interface CreateApplicationDTO {
   url?: string;
   username?: string;
   password?: string;
+  network_name?: string;
   environment?: string;
   notes?: string;
   is_favorite?: boolean;
@@ -48,6 +50,7 @@ function rowToApplication(row: ApplicationRow): Application {
     url: row.url,
     username: decryptField(row.username),
     password: decryptField(row.password),
+    network_name: row.network_name,
     environment: row.environment as AppEnvironment,
     notes: row.notes,
     is_favorite: row.is_favorite === 1,
@@ -106,14 +109,15 @@ export const ApplicationRepository = {
   create(data: CreateApplicationDTO) {
     const db = getDatabase();
     const stmt = db.prepare(`
-      INSERT INTO applications (name, url, username, password, environment, notes, is_favorite)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO applications (name, url, username, password, network_name, environment, notes, is_favorite)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `);
     const result = stmt.run(
       data.name,
       data.url ?? null,
       encryptField(data.username),
       encryptField(data.password),
+      data.network_name ?? null,
       data.environment ?? 'production',
       data.notes ?? null,
       data.is_favorite ? 1 : 0
@@ -134,6 +138,7 @@ export const ApplicationRepository = {
         url = ?,
         username = ?,
         password = ?,
+        network_name = ?,
         environment = ?,
         notes = ?,
         is_favorite = ?
@@ -145,6 +150,7 @@ export const ApplicationRepository = {
       data.url !== undefined ? data.url : existing.url,
       data.username !== undefined ? encryptField(data.username) : existing.username,
       data.password !== undefined ? encryptField(data.password) : existing.password,
+      data.network_name !== undefined ? data.network_name : existing.network_name,
       data.environment ?? existing.environment,
       data.notes !== undefined ? data.notes : existing.notes,
       data.is_favorite !== undefined ? (data.is_favorite ? 1 : 0) : existing.is_favorite,
